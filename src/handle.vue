@@ -1,11 +1,11 @@
 <template>
   <div class="drag-handle"
-       @mousedown="handleMouseDown"
-       :class="{ 
-        'disabled': disabled,
-        'horizontal': direction === 'horizontal',
-        'vertical': direction === 'vertical'
-      }">
+    @mousedown="handleMouseDown"
+    :class="{
+      'disabled': disabled,
+      'horizontal': direction === 'horizontal',
+      'vertical': direction === 'vertical'
+    }">
     <slot></slot>
   </div>
 </template>
@@ -46,8 +46,8 @@
       // 获取所有同级手柄组件
       getAllHandles() {
         return this.$parent.$children.filter(com => {
-          return com.$vnode && 
-                 com.$vnode.componentOptions && 
+          return com.$vnode &&
+                 com.$vnode.componentOptions &&
                  com.$vnode.componentOptions.tag === 'drag-handle'
         })
       },
@@ -131,7 +131,7 @@
       },
       // 获取前后尺寸的实时尺寸
       getLiveContentsSize() {
-        const { 
+        const {
           all: allContents,
           prev: prevContents,
           next: nextContents
@@ -139,22 +139,22 @@
         const prevContentsSize = this.getSizePlus(prevContents)
         const nextContentsSize = this.getSizePlus(nextContents)
         const allContentsSize = prevContentsSize + nextContentsSize
-        return { 
+        return {
           all: allContentsSize,
           prev: prevContentsSize,
           next: nextContentsSize
         }
       },
-      // 获取元素的纵坐标 
-      offsetTop(element) { 
+      // 获取元素的纵坐标
+      offsetTop(element) {
         let offset = element.offsetTop
         if(element.offsetParent != null) {
           offset += this.offsetTop(element.offsetParent)
         }
         return offset
       },
-      // 获取元素的横坐标 
-      offsetLeft(element) { 
+      // 获取元素的横坐标
+      offsetLeft(element) {
         let offset = element.offsetLeft
         if(element.offsetParent != null) {
           offset += this.offsetLeft(element.offsetParent)
@@ -182,7 +182,7 @@
         this.removeMouseEvents()
       },
       handleMouseDown(event) {
-        
+
         // 更改状态
         this.canDrag = true
 
@@ -225,19 +225,19 @@
         const { prev: prevHandle, next: nextHandle } = this.getHandle()
 
         // 待处理的内容元素
-        const { 
+        const {
           all: allContents,
           prev: prevContents,
           next: nextContents
         } = this.getTodoContents()
 
         // 待处理的前面相邻内容区总尺寸 = 鼠标定位的位置 - 鼠标前偏移 - （前面相邻手柄的位置 + 尺寸）
-        let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev - 
+        let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
                                     (!prevHandle ? parentOffsetPosition : (
                                       this.getOffsetPosition(prevHandle.$el) + this.getSize(prevHandle.$el)
                                     ))
-                                 
-        
+
+
         // 待处理的后面相邻元素总尺寸 = 后面相邻手柄的位置 - 当前鼠标的位置 - 当前手柄相对鼠标的偏移值
         let todoNextContentsSize = this.nextHandleOffsetPosition - mousePosition - this.mouseHandleOffsetNext
 
@@ -293,7 +293,7 @@
 
         // 更新所有元素
         const updateContentsSize = (contents, todoContentsSize) => {
-          const average = todoContentsSize / contents.length          
+          const average = todoContentsSize / contents.length
           const todoContents = []
           const fixedContents = []
           let fixedContentsSize = 0
@@ -320,7 +320,7 @@
           })
           todoContents.forEach(component => {
             component.size = (todoContentsSize - fixedContentsSize) / todoContents.length
-          })          
+          })
         }
 
         updateContentsSize(prevContents, todoPrevContentsSize)

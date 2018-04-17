@@ -1,7 +1,12 @@
 <template>
-  <div class="drag-zone">
+  <div class="drag-zone"
+    :class="{
+      'horizontal': horizontal,
+      'vertical': !horizontal,
+  }">
     <slot></slot>
   </div>
+
 </template>
 
 <script>
