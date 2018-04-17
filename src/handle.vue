@@ -342,6 +342,8 @@
 <style scoped>
   .drag-handle {
     background: #2196f3;
+
+    user-select: none;
   }
 
   .drag-handle.horizontal {
