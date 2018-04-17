@@ -1,8 +1,8 @@
 <template>
   <div class="drag-zone"
     :class="{
-      'horizontal': horizontal,
-      'vertical': !horizontal,
+      'horizontal': isHorizontal,
+      'vertical': isVertical,
   }">
     <slot></slot>
   </div>
@@ -13,19 +13,16 @@
   export default {
     name: 'drag-zone',
     props: {
-      options: {
-        type: Object,
-        default() {
-          return {
-            direction: 'horizontal'
-          }
-        }
-      }
+      'horizontal': Boolean,
+      'vertical': Boolean,
     },
     computed: {
-      horizontal() {
-        return this.options.direction === 'horizontal'
-      }
+      isHorizontal() {
+        return this.horizontal || !this.vertical
+      },
+      isVertical() {
+        return !this.isHorizontal
+      },
     }
   }
 </script>

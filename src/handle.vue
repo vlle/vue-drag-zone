@@ -3,8 +3,8 @@
     @mousedown="handleMouseDown"
     :class="{
       'disabled': disabled,
-      'horizontal': direction === 'horizontal',
-      'vertical': direction === 'vertical'
+      'horizontal': isHorizontal,
+      'vertical': isVertical,
     }">
     <slot></slot>
   </div>
@@ -29,18 +29,14 @@
       }
     },
     computed: {
-      // 方向 direction, 1: 水平 horizontal  2: 垂直 vertical
-      direction() {
-        return this.$parent.options.direction
-      },
       // 水平
-      horizontal() {
-        return this.direction === 'horizontal'
+      isHorizontal() {
+        return this.$parent && this.$parent.isHorizontal
       },
       // 垂直
-      vertical() {
-        return this.direction === 'vertical'
-      }
+      isVertical() {
+        return this.$parent && this.$parent.isVertical
+      },
     },
     methods: {
       // 获取所有同级手柄组件
@@ -117,11 +113,11 @@
       },
       // 获取尺寸属性
       getSize(element) {
-        return element.getBoundingClientRect()[this.horizontal ? 'width' : 'height']
+        return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
       },
       // 获取偏移位置属性
       getOffsetPosition(element) {
-        return this[this.horizontal ? 'offsetLeft' : 'offsetTop'](element)
+        return this[this.isHorizontal ? 'offsetLeft' : 'offsetTop'](element)
       },
       // 获取尺寸之和
       getSizePlus(components) {
@@ -163,7 +159,7 @@
       },
       // 获取鼠标位置
       mousePosition(event) {
-        return event[this.horizontal ? 'pageX' : 'pageY']
+        return event[this.isHorizontal ? 'pageX' : 'pageY']
       },
       // 当前手柄尺寸
       handleSize() {

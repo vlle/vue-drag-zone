@@ -2,8 +2,8 @@
   <div class="drag-content"
     :class="{
       'threshold': isThreshold,
-      'horizontal': horizontal,
-      'vertical': !horizontal,
+      'horizontal': isHorizontal,
+      'vertical': isVertical,
     }"
   :style="style">
     <slot></slot>
@@ -32,10 +32,10 @@
         return attr ? css[attr] : css
       },
       getSize(element) {
-        return element.getBoundingClientRect()[this.horizontal ? 'width' : 'height']
+        return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
       },
       getSizeAttr(type) {
-        return `${type}${this.horizontal ? 'Width' : 'Height'}`
+        return `${type}${this.isHorizontal ? 'Width' : 'Height'}`
       },
       getMinSize() {
         if (this.fixed) {
@@ -78,19 +78,19 @@
           this.sizeAttr = val
         }
       },
-      parentOptions() {
-        return this.$parent && this.$parent.options && this.$parent.options
+      isHorizontal() {
+        return this.$parent && this.$parent.isHorizontal
       },
-      horizontal() {
-        return this.parentOptions.direction === 'horizontal'
+      isVertical() {
+        return this.$parent && this.$parent.isVertical
       },
       isThreshold() {
         return this.isMinSize || this.isMaxSize
       },
       style() {
         const style = {}
-        if (!this.fixed && this.size !== null && this.parentOptions) {
-          if (this.horizontal) {
+        if (!this.fixed && this.size !== null) {
+          if (this.isHorizontal) {
             style.width = this.size + 'px'
           } else {
             style.height = this.size + 'px'
