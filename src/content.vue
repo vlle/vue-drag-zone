@@ -105,5 +105,17 @@
 <style scoped>
   .drag-content {
     /*display: inline-block;*/
+
+    background: rgba(0,  0,  0, 0.1);
+
+    overflow: hidden;
+  }
+
+  .drag-content.horizontal {
+    height: 100%;
+  }
+
+  .drag-content.vertical {
+    width: 100%;
   }
 </style>

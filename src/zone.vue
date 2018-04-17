@@ -33,5 +33,15 @@
 <style scoped>
   .drag-zone {
     position: relative;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .drag-zone.horizontal {
+    flex-direction: row;
+  }
+
+  .drag-zone.vertical {
+    flex-direction: column;
   }
 </style>

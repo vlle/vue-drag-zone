@@ -344,12 +344,24 @@
 </script>
 
 <style scoped>
+  .drag-handle {
+    background: #2196f3;
+  }
+
   .drag-handle.horizontal {
+    width: 10px;
+    height: 100%;
+
     cursor: col-resize;
   }
+
   .drag-handle.vertical {
+    width: 100%;
+    height: 10px;
+
     cursor: row-resize;
   }
+
   .drag-handle.disabled {
     opacity: .5;
     cursor: no-drop;
