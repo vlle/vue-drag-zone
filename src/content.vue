@@ -4,8 +4,7 @@
       'threshold': isThreshold,
       'horizontal': isHorizontal,
       'vertical': isVertical,
-    }"
-  :style="style">
+  }" :style="style">
     <slot></slot>
   </div>
 </template>
@@ -13,12 +12,14 @@
 <script>
   export default {
     name: 'drag-content',
+
     props: {
       fixed: {
         type: [Number, Boolean],
         default: false
       }
     },
+
     data() {
       return {
         sizeAttr: null,
@@ -26,17 +27,21 @@
         isMaxSize: false
       }
     },
+
     methods: {
       getCss(element, attr) {
         const css = document.defaultView.getComputedStyle(element, null)
         return attr ? css[attr] : css
       },
+
       getSize(element) {
         return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
       },
+
       getSizeAttr(type) {
         return `${type}${this.isHorizontal ? 'Width' : 'Height'}`
       },
+
       getMinSize() {
         if (this.fixed) {
           return this.getSize(this.$el)
@@ -55,6 +60,7 @@
           return minSize
         }
       },
+
       getMaxSize() {
         if (this.fixed) {
           return this.getSize(this.$el)
@@ -69,6 +75,7 @@
         }
       }
     },
+
     computed: {
       size: {
         get() {
@@ -78,15 +85,19 @@
           this.sizeAttr = val
         }
       },
+
       isHorizontal() {
         return this.$parent && this.$parent.isHorizontal
       },
+
       isVertical() {
         return this.$parent && this.$parent.isVertical
       },
+
       isThreshold() {
         return this.isMinSize || this.isMaxSize
       },
+
       style() {
         const style = {}
         if (!this.fixed && this.size !== null) {
@@ -106,7 +117,7 @@
   .drag-content {
     /*display: inline-block;*/
 
-    background: rgba(0,  0,  0, 0.1);
+    background: rgba(0, 0, 0, 0.1);
 
     overflow: hidden;
   }

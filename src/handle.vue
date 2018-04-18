@@ -13,12 +13,14 @@
 <script>
   export default {
     name: 'drag-handle',
+
     props: {
       disabled: {
         type: Boolean,
         default: false
       }
     },
+
     data() {
       return {
         canDrag: false,
@@ -28,18 +30,20 @@
         nextHandleOffsetPosition: 0,
       }
     },
+
     computed: {
-      // 水平
       isHorizontal() {
         return this.$parent && this.$parent.isHorizontal
       },
-      // 垂直
+
       isVertical() {
         return this.$parent && this.$parent.isVertical
       },
     },
+
     methods: {
-      // 获取所有同级手柄组件
+      // Get all handle components
+      //
       getAllHandles() {
         return this.$parent.$children.filter(com => {
           return com.$vnode &&
@@ -47,7 +51,14 @@
                  com.$vnode.componentOptions.tag === 'drag-handle'
         })
       },
-      // 分割前面和后面的所有兄弟手柄组件
+
+      // Split front and rear handle components
+      //
+      // @return Object
+      //   (Array) all   - All handles including this one
+      //   (Array) prev  - All handles before this one
+      //   (Array) next  - All handles after this one
+      //
       getHandles() {
         const allHandles = this.getAllHandles()
         const prev = []
@@ -62,7 +73,14 @@
         })
         return { all: allHandles, prev, next }
       },
-      // 分割前后相邻的兄弟手柄组件
+
+      // Split adjacent handle components
+      //
+      // @return Object
+      //   (Array) all   - All handles including this one
+      //   (Array) prev  - All handles before this one
+      //   (Array) next  - All handles after this one
+      //
       getHandle() {
         const allHandles = this.getAllHandles()
         let prev = null
@@ -75,7 +93,9 @@
         })
         return { prev, next }
       },
-      // 获取所有的兄弟内容组件
+
+      // Get all content components
+      //
       getAllContents() {
         return this.$parent.$children.filter(com => {
           return com.$vnode &&
@@ -83,7 +103,14 @@
                  com.$vnode.componentOptions.tag === 'drag-content'
         })
       },
-      // 分割前后相邻的兄弟内容组件
+
+      // Split adjacent content components
+      //
+      // @return Object
+      //   (Array) all   - All content components
+      //   (Array) prev  - All content components between this and the previous handle
+      //   (Array) next  - All content components between this and the next handle
+      //
       getTodoContents() {
         const allComponents = this.$parent.$children
         const all = []
@@ -111,21 +138,38 @@
         })
         return { all, prev, next }
       },
-      // 获取尺寸属性
+
+      // Get element's size
+      // (width or height, depending on the zone's orientation)
+      //
       getSize(element) {
         return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
       },
-      // 获取偏移位置属性
+
+      // Get element's offset position
+      // (left or top, depending on the zone's orientation)
+      //
       getOffsetPosition(element) {
         return this[this.isHorizontal ? 'offsetLeft' : 'offsetTop'](element)
       },
-      // 获取尺寸之和
+
+      // Get the sum of the components size
+      // (width or height, depending on the zone's orientation)
+      //
       getSizePlus(components) {
         return components.reduce((size, component) => {
           return size + this.getSize(component.$el)
         }, 0)
       },
-      // 获取前后尺寸的实时尺寸
+
+      // Get the size of components
+      // (width or height, depending on the zone's orientation)
+      //
+      // @return Object
+      //   (Integer) all   - Size of all content components
+      //   (Integer) prev  - Size of all content components between this and the previous handle
+      //   (Integer) next  - Size of all content components between this and the next handle
+      //
       getLiveContentsSize() {
         const {
           all: allContents,
@@ -141,7 +185,9 @@
           next: nextContentsSize
         }
       },
-      // 获取元素的纵坐标
+
+      // Get element's total offset top
+      //
       offsetTop(element) {
         let offset = element.offsetTop
         if(element.offsetParent != null) {
@@ -149,7 +195,9 @@
         }
         return offset
       },
-      // 获取元素的横坐标
+
+      // Get element's total offset left
+      //
       offsetLeft(element) {
         let offset = element.offsetLeft
         if(element.offsetParent != null) {
@@ -157,19 +205,30 @@
         }
         return offset
       },
-      // 获取鼠标位置
+
+      // Get mouse position
+      // (x or y, depending on the zone's orientation)
+      //
       mousePosition(event) {
         return event[this.isHorizontal ? 'pageX' : 'pageY']
       },
-      // 当前手柄尺寸
+
+      // Get own size
+      // (width or height, depending on the zone's orientation)
+      //
       handleSize() {
         return this.getSize(this.$el)
       },
-      // 当前手柄位置
+
+      // Get own offset position
+      // (width or height, depending on the zone's orientation)
+      //
       handleOffsetPosition() {
         return this.getOffsetPosition(this.$el)
       },
-      // 鼠标抬起事件
+
+      // Handle mouse up event
+      //
       handleMouseUp() {
         this.canDrag = false
         this.mouseHandleOffsetPrev = 0
@@ -177,67 +236,73 @@
         this.nextHandleOffsetPosition = 0
         this.removeMouseEvents()
       },
+
+      // Handle mouse down event
+      //
       handleMouseDown(event) {
 
-        // 更改状态
+        // Change the status
         this.canDrag = true
 
-        // 基本属性
+        // Basic properties
         const handleSize = this.handleSize()
         const mousePosition = this.mousePosition(event)
         const handleOffsetPosition = this.handleOffsetPosition()
 
-        // 按下时确定最大宽度
+        // Determine the maximum width when pressed
         this.todoContentsMaxSize = this.getLiveContentsSize().all
 
-        // 鼠标相对于当前手柄的偏移位置
+        // The mouse's offset relative to the current handle
         this.mouseHandleOffsetPrev = mousePosition - handleOffsetPosition
         this.mouseHandleOffsetNext = handleSize - this.mouseHandleOffsetPrev
 
-        // 下一个手柄元素的绝对位置
+        // The absolute position of the next handle element or the zone's end
         const { next: nextHandle } = this.getHandle()
         this.nextHandleOffsetPosition = nextHandle
-                                        ? this.getOffsetPosition(nextHandle.$el)
-                                        : this.getOffsetPosition(this.$parent.$el) + this.getSize(this.$parent.$el)
+          ? this.getOffsetPosition(nextHandle.$el)
+          : this.getOffsetPosition(this.$parent.$el) + this.getSize(this.$parent.$el)
 
-        // 绑定事件
+        // Bind events
         this.bindMouseEvents()
       },
+
+      // Handle mouse move event
+      //
       handleMouseMove(event) {
 
-        // 若手柄为禁用或非点击状态则不做任何改变
+        // Cancel if the handle is disabled or not clicked
         if (this.disabled || !this.canDrag) return false
 
-        // 鼠标定位
+        // Mouse positioning
         const mousePosition = this.mousePosition(event)
 
-        // 活动手柄的位置
+        // The position of the movable handle
         const handleOffsetPosition = this.handleOffsetPosition()
 
-        // 宿主容器的位置
+        // The position of the zone
         const parentOffsetPosition = this.getOffsetPosition(this.$parent.$el)
 
-        // 相邻手柄
+        // Adjacent handles
         const { prev: prevHandle, next: nextHandle } = this.getHandle()
 
-        // 待处理的内容元素
+        // Pending content components
         const {
           all: allContents,
           prev: prevContents,
           next: nextContents
         } = this.getTodoContents()
 
-        // 待处理的前面相邻内容区总尺寸 = 鼠标定位的位置 - 鼠标前偏移 - （前面相邻手柄的位置 + 尺寸）
+        // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - (position of front adjacent handle + size of front adjacent handle)
         let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
-                                    (!prevHandle ? parentOffsetPosition : (
-                                      this.getOffsetPosition(prevHandle.$el) + this.getSize(prevHandle.$el)
-                                    ))
+          (!prevHandle ? parentOffsetPosition : (
+            this.getOffsetPosition(prevHandle.$el) + this.getSize(prevHandle.$el)
+          ))
 
 
-        // 待处理的后面相邻元素总尺寸 = 后面相邻手柄的位置 - 当前鼠标的位置 - 当前手柄相对鼠标的偏移值
+        // Total size of the rear adjacent content components to be processed = position of the rear adjacent handle - mouse position - mouse offset relative to current handle
         let todoNextContentsSize = this.nextHandleOffsetPosition - mousePosition - this.mouseHandleOffsetNext
 
-        // 一些防溢出的处理
+        // Some anti-spill handling
         if (todoPrevContentsSize < 0) {
           todoPrevContentsSize = 0
         }
@@ -251,18 +316,24 @@
           todoNextContentsSize = this.todoContentsMaxSize
         }
 
-        /*
-         * 处理前拦截
-         * 前面元素的最大尺寸 ===（一个具体的值 || 移动区间 - 后面元素的最小尺寸）
-         * 前面元素的最小尺寸 ===（一个具体的值 || 0）
-         * 后面元素的最大尺寸 ===（一个具体的值 || 移动区间 - 前面元素的最小尺寸）
-         * 后面元素的最小尺寸 ===（一个具体的值 || 0）
-        */
+        // Intercept on out of bound values
+        // maximum size of the front contents === (specific value || moving range - minimum size of the rear contents)
+        // minimum size of the front contents === (specific value || 0)
+        // maximum size of the rear contents  === (specific value || moving range - minimum size of the front contents)
+        // minimum size of the rear contents  === (specific value || 0)
 
-        const prevContentsMinSizePlus = prevContents.reduce((plus, content) => plus + content.getMinSize(), 0)
-        const nextContentsMinSizePlus = nextContents.reduce((plus, content) => plus + content.getMinSize(), 0)
+        let prevContentsMinSizePlus = prevContents.reduce((plus, content) => plus + content.getMinSize(), 0)
+        let nextContentsMinSizePlus = nextContents.reduce((plus, content) => plus + content.getMinSize(), 0)
         let prevContentsMaxSizePlus = prevContents.reduce((plus, content) => plus + content.getMaxSize(), 0)
         let nextContentsMaxSizePlus = nextContents.reduce((plus, content) => plus + content.getMaxSize(), 0)
+
+        if (typeof prevContentsMinSizePlus === 'string') {
+          prevContentsMinSizePlus = 0
+        }
+
+        if (typeof nextContentsMinSizePlus === 'string') {
+          nextContentsMinSizePlus = 0
+        }
 
         if (typeof prevContentsMaxSizePlus === 'string') {
           prevContentsMaxSizePlus = this.todoContentsMaxSize - nextContentsMinSizePlus
@@ -272,22 +343,21 @@
           nextContentsMaxSizePlus = this.todoContentsMaxSize - prevContentsMinSizePlus
         }
 
-        /*
-         * 如果待操作的前面总尺寸 > 前面元素的最大尺寸
-         * 如果待操作的前面总尺寸 < 前面元素的最小尺寸
-         * 如果待操作的后面总尺寸 > 后面元素的最大尺寸
-         * 如果待操作的后面总尺寸 < 后面元素的最小尺寸
-        */
+        // total front size to be operated > maximum front size
+        // total front size to be operated < minimum front size
+        // total rear size to be operated > maximum rear size
+        // total rear size to be operated < minimum rear size
 
         if (todoPrevContentsSize > prevContentsMaxSizePlus ||
-            todoPrevContentsSize < prevContentsMinSizePlus ||
-            todoNextContentsSize > nextContentsMaxSizePlus ||
-            todoNextContentsSize < nextContentsMinSizePlus) {
-          // console.log('超出预期进行拦截')
+          todoPrevContentsSize < prevContentsMinSizePlus ||
+          todoNextContentsSize > nextContentsMaxSizePlus ||
+          todoNextContentsSize < nextContentsMinSizePlus) {
+
+          // console.warn('Intercepted, values beyond expectations')
           return false
         }
 
-        // 更新所有元素
+        // Function to update elements
         const updateContentsSize = (contents, todoContentsSize) => {
           const average = todoContentsSize / contents.length
           const todoContents = []
@@ -319,18 +389,21 @@
           })
         }
 
+        // Update all elements
         updateContentsSize(prevContents, todoPrevContentsSize)
         updateContentsSize(nextContents, todoNextContentsSize)
         // this.$nextTick(() => {
           // updateContentsSize(nextContents, this.todoContentsMaxSize - this.getLiveContentsSize().prev)
         // })
       },
-      // 绑定事件
+
+      // Bind mouse events
       bindMouseEvents() {
         document.addEventListener('mouseup', this.handleMouseUp)
         document.addEventListener('mousemove', this.handleMouseMove)
       },
-      // 释放所有事件
+
+      // Release mouse events
       removeMouseEvents() {
         document.removeEventListener('mouseup', this.handleMouseUp)
         document.removeEventListener('mousemove', this.handleMouseMove)

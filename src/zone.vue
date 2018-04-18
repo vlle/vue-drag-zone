@@ -12,14 +12,17 @@
 <script>
   export default {
     name: 'drag-zone',
+
     props: {
       'horizontal': Boolean,
       'vertical': Boolean,
     },
+
     computed: {
       isHorizontal() {
         return this.horizontal || !this.vertical
       },
+
       isVertical() {
         return !this.isHorizontal
       },
