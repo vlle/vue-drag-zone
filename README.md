@@ -1,26 +1,6 @@
-
-[![GitHub stars](https://img.shields.io/github/stars/surmon-china/vue-drag-zone.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone/stargazers)
-[![Travis](https://img.shields.io/travis/rust-lang/rust.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone)
-[![GitHub issues](https://img.shields.io/github/issues/surmon-china/vue-drag-zone.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone/issues)
-[![GitHub forks](https://img.shields.io/github/forks/surmon-china/vue-drag-zone.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone/network)
-[![GitHub last commit](https://img.shields.io/github/last-commit/google/skia.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square)](https://github.com/surmon-china/vue-drag-zone)
-[![Twitter](https://img.shields.io/twitter/url/https/github.com/surmon-china/vue-drag-zone.svg?style=flat-square)](https://twitter.com/intent/tweet?url=https://github.com/surmon-china/vue-drag-zone)
-
-
-[![NPM](https://nodei.co/npm/vue-drag-zone.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/vue-drag-zone/)
-[![NPM](https://nodei.co/npm-dl/vue-drag-zone.png?months=9&height=3)](https://nodei.co/npm/vue-drag-zone/)
-
-
-# Vue-Drag-Zone
+# Vuelle-Drag-Zone
 Drag Zone component for Vue.
 
-适用于 Vue 的 DOM 拖动组件。
-
-
-# Example
-
-[Demo Page](https://surmon-china.github.io/vue-drag-zone)
 
 # Install
 
@@ -28,17 +8,12 @@ Drag Zone component for Vue.
 
 ``` html
 <script type="text/javascript" src="path/to/vue.min.js"></script>
-<script type="text/javascript" src="path/to/dist/vue-drag-zone.js"></script>
+<script type="text/javascript" src="path/to/dist/vuelle-drag-zone.js"></script>
 <script type="text/javascript">
-  Vue.use(window.VueDragZone)
+  Vue.use(window.VuelleDragZone)
 </script>
 ```
 
-#### NPM
-
-``` bash
-npm install vue-drag-zone --save
-```
 
 ### Mount
 
@@ -46,15 +21,15 @@ npm install vue-drag-zone --save
 
 ``` javascript
 import Vue from 'vue'
-import VueDragZone from 'vue-drag-zone'
+import VuelleDragZone from 'vuelle-drag-zone'
 
-Vue.use(VueDragZone)
+Vue.use(VuelleDragZone)
 ```
 
 #### mount with component
 
 ```javascript
-import { dragZone, dragHandle, dragContent } from 'vue-drag-zone'
+import { dragZone, dragHandle, dragContent } from 'vuelle-drag-zone'
 
 export default {
   components: {
@@ -70,49 +45,46 @@ export default {
 ```vue
 <template>
   <!-- base use -->
-  <drag-zone class="zone">
-    <drag-content class="content c1">
+  <drag-zone>
+    <drag-content class="c1">
       <div class="item i1">item 1</div>
     </drag-content>
-    <drag-handle class="handle"></drag-handle>
-    <drag-content class="content c2">
+    <drag-handle></drag-handle>
+    <drag-content class="c2">
       <div class="item i2">item 2</div>
     </drag-content>
-    <drag-handle class="handle"></drag-handle>
-    <drag-content class="content c3">
+    <drag-handle></drag-handle>
+    <drag-content class="c3">
       <div class="item i3">item 3</div>
     </drag-content>
-    <drag-content class="content c4">
+    <drag-content class="c4">
       <div class="item i4">item 4</div>
     </drag-content>
-    <drag-handle class="handle"></drag-handle>
-    <drag-content class="content c5">
+    <drag-handle></drag-handle>
+    <drag-content class="c5">
       <div class="item i5">item 5</div>
     </drag-content>
 
   <!-- disabled handle -->
-  <drag-zone class="zone">
-    <drag-content class="content c1">
+  <drag-zone>
+    <drag-content class="c1">
       <div class="item i1">item 1</div>
     </drag-content>
-    <drag-handle class="handle"></drag-handle>
-    <drag-content class="content c2">
+    <drag-handle></drag-handle>
+    <drag-content class="c2">
       <div class="item i2">item 2</div>
     </drag-content>
-    <drag-content class="content c3">
+    <drag-content class="c3">
       <div class="item i3">item 3</div>
     </drag-content>
-    <drag-handle class="handle"></drag-handle>
-    <drag-content class="content c4">
+    <drag-handle></drag-handle>
+    <drag-content class="c4">
       <div class="item i4">item 4</div>
     </drag-content>
-    <drag-handle class="handle" :disabled="disabledHandle"></drag-handle>
-    <drag-content class="content c5">
+    <drag-handle :disabled="disabledHandle"></drag-handle>
+    <drag-content class="c5">
       <div class="item i5">item 5</div>
     </drag-content>
   </drag-zone>
 </template>
 ```
-
-# Author
-[Surmon](https://surmon.me)

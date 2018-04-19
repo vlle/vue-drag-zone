@@ -7,7 +7,7 @@ const resolve = dir => path.join(__dirname, '..', dir)
 
 module.exports = merge(baseConfig, {
   entry: {
-    'vue-drag-zone': './src/index.js'
+    'vuelle-drag-zone': './src/index.js'
   },
   externals: {
     // 'object-assign': 'object-assign'
@@ -16,7 +16,7 @@ module.exports = merge(baseConfig, {
     path: path.resolve(__dirname, '../dist'),
     publicPath: '/',
     filename: '[name].js',
-    library: 'vueDragZone',
+    library: 'vuelleDragZone',
     libraryTarget: 'umd'
   },
   devtool: '#source-map',
