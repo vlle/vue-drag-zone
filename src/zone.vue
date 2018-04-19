@@ -10,13 +10,30 @@
 </template>
 
 <script>
+  import debounce from 'lodash/debounce'
+
+  import { isVueComponentTag } from './utils/vue'
+  import autoRegisterEvents from './mixins/auto-register-events'
+
   export default {
     name: 'drag-zone',
+
+    mixins: [
+      autoRegisterEvents('mounted'),
+    ],
 
     props: {
       'horizontal': Boolean,
       'vertical': Boolean,
     },
+
+    mounted() {
+      this.updateChildren()
+    },
+
+    data: () => ({
+      children: [],
+    }),
 
     computed: {
       isHorizontal() {
@@ -26,7 +43,31 @@
       isVertical() {
         return !this.isHorizontal
       },
-    }
+
+      contents() {
+        return this.children.filter((child) => isVueComponentTag(child, 'drag-content'))
+      },
+
+      handles() {
+        return this.children.filter((child) => isVueComponentTag(child, 'drag-handle'))
+      },
+    },
+
+    methods: {
+      updateChildren: debounce(function() {
+        this.children = [...this.$children]
+      }, 0.01),
+    },
+
+    events: {
+      childMounted(component) {
+        this.updateChildren()
+      },
+
+      childDestroyed(component) {
+        this.updateChildren()
+      },
+    },
   }
 </script>
 

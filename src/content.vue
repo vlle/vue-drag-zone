@@ -2,16 +2,22 @@
   <div class="drag-content"
     :class="{
       'threshold': isThreshold,
-      'horizontal': isHorizontal,
-      'vertical': isVertical,
+      'horizontal': zone.isHorizontal,
+      'vertical': zone.isVertical,
   }" :style="style">
     <slot></slot>
   </div>
 </template>
 
 <script>
+  import childOfDragZone from './mixins/child-of-drag-zone'
+
   export default {
     name: 'drag-content',
+
+    mixins: [
+      childOfDragZone,
+    ],
 
     props: {
       fixed: {
@@ -35,11 +41,11 @@
       },
 
       getSize(element) {
-        return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
+        return element.getBoundingClientRect()[this.zone.isHorizontal ? 'width' : 'height']
       },
 
       getSizeAttr(type) {
-        return `${type}${this.isHorizontal ? 'Width' : 'Height'}`
+        return `${type}${this.zone.isHorizontal ? 'Width' : 'Height'}`
       },
 
       getMinSize() {
@@ -86,14 +92,6 @@
         }
       },
 
-      isHorizontal() {
-        return this.$parent && this.$parent.isHorizontal
-      },
-
-      isVertical() {
-        return this.$parent && this.$parent.isVertical
-      },
-
       isThreshold() {
         return this.isMinSize || this.isMaxSize
       },
@@ -101,7 +99,7 @@
       style() {
         const style = {}
         if (!this.fixed && this.size !== null) {
-          if (this.isHorizontal) {
+          if (this.zone.isHorizontal) {
             style.width = this.size + 'px'
           } else {
             style.height = this.size + 'px'

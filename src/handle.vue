@@ -3,16 +3,22 @@
     @mousedown="handleMouseDown"
     :class="{
       'disabled': disabled,
-      'horizontal': isHorizontal,
-      'vertical': isVertical,
+      'horizontal': zone.isHorizontal,
+      'vertical': zone.isVertical,
     }">
     <slot></slot>
   </div>
 </template>
 
 <script>
+  import childOfDragZone from './mixins/child-of-drag-zone'
+
   export default {
     name: 'drag-handle',
+
+    mixins: [
+      childOfDragZone,
+    ],
 
     props: {
       disabled: {
@@ -31,27 +37,7 @@
       }
     },
 
-    computed: {
-      isHorizontal() {
-        return this.$parent && this.$parent.isHorizontal
-      },
-
-      isVertical() {
-        return this.$parent && this.$parent.isVertical
-      },
-    },
-
     methods: {
-      // Get all handle components
-      //
-      getAllHandles() {
-        return this.$parent.$children.filter(com => {
-          return com.$vnode &&
-                 com.$vnode.componentOptions &&
-                 com.$vnode.componentOptions.tag === 'drag-handle'
-        })
-      },
-
       // Split front and rear handle components
       //
       // @return Object
@@ -60,7 +46,7 @@
       //   (Array) next  - All handles after this one
       //
       getHandles() {
-        const allHandles = this.getAllHandles()
+        const allHandles = this.zone.handles
         const prev = []
         const next = []
         let isSegmented = false
@@ -82,7 +68,7 @@
       //   (Array) next  - All handles after this one
       //
       getHandle() {
-        const allHandles = this.getAllHandles()
+        const allHandles = this.zone.handles
         let prev = null
         let next = null
         allHandles.forEach((handle, index) => {
@@ -94,16 +80,6 @@
         return { prev, next }
       },
 
-      // Get all content components
-      //
-      getAllContents() {
-        return this.$parent.$children.filter(com => {
-          return com.$vnode &&
-                 com.$vnode.componentOptions &&
-                 com.$vnode.componentOptions.tag === 'drag-content'
-        })
-      },
-
       // Split adjacent content components
       //
       // @return Object
@@ -112,7 +88,7 @@
       //   (Array) next  - All content components between this and the next handle
       //
       getTodoContents() {
-        const allComponents = this.$parent.$children
+        const allComponents = this.zone.children
         const all = []
         const next = []
         let prev = []
@@ -143,14 +119,14 @@
       // (width or height, depending on the zone's orientation)
       //
       getSize(element) {
-        return element.getBoundingClientRect()[this.isHorizontal ? 'width' : 'height']
+        return element.getBoundingClientRect()[this.zone.isHorizontal ? 'width' : 'height']
       },
 
       // Get element's offset position
       // (left or top, depending on the zone's orientation)
       //
       getOffsetPosition(element) {
-        return this[this.isHorizontal ? 'offsetLeft' : 'offsetTop'](element)
+        return this[this.zone.isHorizontal ? 'offsetLeft' : 'offsetTop'](element)
       },
 
       // Get the sum of the components size
@@ -210,7 +186,7 @@
       // (x or y, depending on the zone's orientation)
       //
       mousePosition(event) {
-        return event[this.isHorizontal ? 'pageX' : 'pageY']
+        return event[this.zone.isHorizontal ? 'pageX' : 'pageY']
       },
 
       // Get own size
@@ -260,7 +236,7 @@
         const { next: nextHandle } = this.getHandle()
         this.nextHandleOffsetPosition = nextHandle
           ? this.getOffsetPosition(nextHandle.$el)
-          : this.getOffsetPosition(this.$parent.$el) + this.getSize(this.$parent.$el)
+          : this.getOffsetPosition(this.zone.$el) + this.getSize(this.zone.$el)
 
         // Bind events
         this.bindMouseEvents()
@@ -280,7 +256,7 @@
         const handleOffsetPosition = this.handleOffsetPosition()
 
         // The position of the zone
-        const parentOffsetPosition = this.getOffsetPosition(this.$parent.$el)
+        const zoneOffsetPosition = this.getOffsetPosition(this.zone.$el)
 
         // Adjacent handles
         const { prev: prevHandle, next: nextHandle } = this.getHandle()
@@ -294,7 +270,7 @@
 
         // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - (position of front adjacent handle + size of front adjacent handle)
         let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
-          (!prevHandle ? parentOffsetPosition : (
+          (!prevHandle ? zoneOffsetPosition : (
             this.getOffsetPosition(prevHandle.$el) + this.getSize(prevHandle.$el)
           ))
 
