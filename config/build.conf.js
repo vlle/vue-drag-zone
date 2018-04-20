@@ -22,6 +22,9 @@ module.exports = merge(baseConfig, {
   devtool: '#source-map',
   resolve: {
     extensions: ['.js', '.vue', '.json'],
+    alias: {
+      '@': resolve('src'),
+    },
     modules: [
       resolve('src'),
       resolve('node_modules')

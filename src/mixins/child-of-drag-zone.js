@@ -4,9 +4,9 @@
 //   children of a <drag-zone> component.
 //
 
-import { isVueComponentTag } from '../utils/vue'
+import { isVueComponentTag } from '@/utils/vue'
 
-import childLifecycleEvents from './child-lifecycle-events'
+import childLifecycleEvents from '@/mixins/child-lifecycle-events'
 
 export class NotADragZone extends Error {}
 

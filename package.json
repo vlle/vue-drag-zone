@@ -36,6 +36,7 @@
   ],
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --config config/build.conf.js",
+    "watch": "cross-env NODE_ENV=development webpack --config config/build.conf.js --progress --hide-modules --watch",
     "unit": "cross-env BABEL_ENV=test NODE_ENV=testing karma start test/unit/karma.conf.js --watch",
     "test": "cross-env BABEL_ENV=test NODE_ENV=testing karma start test/unit/karma.conf.js --single-run",
     "lint": "eslint --ext .js,.vue src test/unit/specs",

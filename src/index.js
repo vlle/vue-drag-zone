@@ -1,6 +1,6 @@
-import dragZone from './zone.vue'
-import dragHandle from './handle.vue'
-import dragContent from './content.vue'
+import dragZone from '@/components/zone.vue'
+import dragHandle from '@/components/handle.vue'
+import dragContent from '@/components/content.vue'
 
 const install = function (Vue) {
   Vue.component(dragZone.name, dragZone)

@@ -11,7 +11,7 @@
 </template>
 
 <script>
-  import childOfDragZone from './mixins/child-of-drag-zone'
+  import childOfDragZone from '@/mixins/child-of-drag-zone'
 
   export default {
     name: 'drag-handle',

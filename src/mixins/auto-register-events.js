@@ -1,16 +1,4 @@
-class InvalidHookName extends Error {}
-
-const validHookNames = [
-  'created',
-  'beforeMount',
-  'mounted',
-]
-
-export default function autoRegisterEvents(hookName = 'created') {
-  if (!validHookNames.includes(hookName)) {
-    throw new InvalidHookName(`invalid hook name: ${hookName}`)
-  }
-
+const autoRegisterEvents = function(hookName = 'created') {
   return {
     [hookName]() {
       for (const [name, func] of Object.entries(this.$options.events)) {
@@ -18,4 +6,9 @@ export default function autoRegisterEvents(hookName = 'created') {
       }
     },
   }
+}
+
+export default {
+  created: () => autoRegisterEvents('created'),
+  mounted: () => autoRegisterEvents('mounted'),
 }

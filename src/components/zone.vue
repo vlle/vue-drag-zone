@@ -12,14 +12,14 @@
 <script>
   import debounce from 'lodash/debounce'
 
-  import { isVueComponentTag } from './utils/vue'
-  import autoRegisterEvents from './mixins/auto-register-events'
+  import { isVueComponentTag } from '@/utils/vue'
+  import autoRegisterEvents from '@/mixins/auto-register-events'
 
   export default {
     name: 'drag-zone',
 
     mixins: [
-      autoRegisterEvents('mounted'),
+      autoRegisterEvents.mounted(),
     ],
 
     props: {

@@ -37,6 +37,7 @@ module.exports = {
       'process.env': env
     }),
     new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true,
       compress: { warnings: false }
     })
   ]
