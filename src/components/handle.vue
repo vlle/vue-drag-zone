@@ -282,43 +282,11 @@
           return false
         }
 
-        // Function to update elements
-        const updateContentsSize = (contents, todoContentsSize) => {
-          const average = todoContentsSize / contents.length
-          const todoContents = []
-          const fixedContents = []
-          let fixedContentsSize = 0
-          contents.forEach(content => {
-            const contentSize = this.zone.getElementSize(content.$el)
-            if (content.fixed) {
-              fixedContentsSize += contentSize
-              fixedContents.push(content)
-            } else {
-              const contentMinSize = content.getMinSize()
-              const contentMaxSize = content.getMaxSize()
-              const isMinSize = contentSize <= contentMinSize
-              const isMaxSize = contentSize >= contentMaxSize
-              content.isMinSize = isMinSize
-              content.isMaxSize = isMaxSize
-              if ((isMinSize && average < contentMinSize) || (isMaxSize && average > contentMaxSize)) {
-                content.size = isMinSize ? contentMinSize : contentMaxSize
-                fixedContentsSize += isMinSize ? contentMinSize : contentMaxSize
-                fixedContents.push(content)
-              } else {
-                todoContents.push(content)
-              }
-            }
-          })
-          todoContents.forEach(component => {
-            component.size = (todoContentsSize - fixedContentsSize) / todoContents.length
-          })
-        }
-
         // Update all elements
-        updateContentsSize(prevContents, todoPrevContentsSize)
-        updateContentsSize(nextContents, todoNextContentsSize)
+        this.zone.updateContentsSize(prevContents, todoPrevContentsSize)
+        this.zone.updateContentsSize(nextContents, todoNextContentsSize)
         // this.$nextTick(() => {
-          // updateContentsSize(nextContents, this.todoContentsMaxSize - this.getLiveContentsSize().prev)
+          // this.zone.updateContentsSize(nextContents, this.todoContentsMaxSize - this.getLiveContentsSize().prev)
         // })
       },
 

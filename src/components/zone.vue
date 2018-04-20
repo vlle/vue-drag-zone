@@ -15,6 +15,10 @@
   import { isVueComponentTag } from '@/utils/vue'
   import autoRegisterEvents from '@/mixins/auto-register-events'
 
+  const updateChildrenList = debounce(function() {
+    this.children = [...this.$children]
+  }, 10)
+
   export default {
     name: 'drag-zone',
 
@@ -29,6 +33,10 @@
 
     mounted() {
       this.updateChildrenList()
+      updateChildrenList.flush()
+
+      this.updateContentsSize(this.contents,
+        this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles))
     },
 
     data: () => ({
@@ -67,9 +75,7 @@
     },
 
     methods: {
-      updateChildrenList: debounce(function() {
-        this.children = [...this.$children]
-      }, 10),
+      updateChildrenList,
 
       // Get size
       //
@@ -121,6 +127,44 @@
       //
       getEventMousePosition(event) {
         return event[this.isHorizontal ? 'pageX' : 'pageY']
+      },
+
+      // Update size of zontent components
+      //
+      updateContentsSize(contents, todoContentsSize) {
+        const average = todoContentsSize / contents.length
+        const todoContents = []
+        const fixedContents = []
+        let fixedContentsSize = 0
+
+        contents.forEach(content => {
+          const contentSize = this.getElementSize(content.$el)
+          if (content.fixed) {
+            fixedContentsSize += contentSize
+            fixedContents.push(content)
+
+          } else {
+            const contentMinSize = content.getMinSize()
+            const contentMaxSize = content.getMaxSize()
+            const isMinSize = contentSize <= contentMinSize
+            const isMaxSize = contentSize >= contentMaxSize
+            content.isMinSize = isMinSize
+            content.isMaxSize = isMaxSize
+
+            if ((isMinSize && average < contentMinSize) || (isMaxSize && average > contentMaxSize)) {
+              content.size = isMinSize ? contentMinSize : contentMaxSize
+              fixedContentsSize += isMinSize ? contentMinSize : contentMaxSize
+              fixedContents.push(content)
+
+            } else {
+              todoContents.push(content)
+            }
+          }
+        })
+
+        todoContents.forEach(component => {
+          component.size = (todoContentsSize - fixedContentsSize) / todoContents.length
+        })
       },
     },
 
