@@ -11,6 +11,7 @@
 </template>
 
 <script>
+  import { getVueComponentTag } from '@/utils/vue'
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
   export default {
@@ -67,7 +68,7 @@
       //   (Array) prev  - All handles before this one
       //   (Array) next  - All handles after this one
       //
-      getHandle() {
+      getAdjacentHandles() {
         const allHandles = this.zone.handles
         let prev = null
         let next = null
@@ -96,9 +97,10 @@
         let isSegmentEnd = false
         allComponents.forEach(component => {
           const isCurrent = component === this
+          const componentTag = getVueComponentTag(component)
           isSegmented = isSegmented || isCurrent
-          if (component.$vnode && component.$vnode.componentOptions) {
-            if (component.$vnode.componentOptions.tag === 'drag-content') {
+          if (componentTag) {
+            if (componentTag === 'drag-content') {
               all.push(component)
               if (!isSegmented) {
                 prev.push(component)
@@ -115,31 +117,7 @@
         return { all, prev, next }
       },
 
-      // Get element's size
-      // (width or height, depending on the zone's orientation)
-      //
-      getSize(element) {
-        return element.getBoundingClientRect()[this.zone.isHorizontal ? 'width' : 'height']
-      },
-
-      // Get element's offset position
-      // (left or top, depending on the zone's orientation)
-      //
-      getOffsetPosition(element) {
-        return this[this.zone.isHorizontal ? 'offsetLeft' : 'offsetTop'](element)
-      },
-
-      // Get the sum of the components size
-      // (width or height, depending on the zone's orientation)
-      //
-      getSizePlus(components) {
-        return components.reduce((size, component) => {
-          return size + this.getSize(component.$el)
-        }, 0)
-      },
-
       // Get the size of components
-      // (width or height, depending on the zone's orientation)
       //
       // @return Object
       //   (Integer) all   - Size of all content components
@@ -152,8 +130,8 @@
           prev: prevContents,
           next: nextContents
         } = this.getTodoContents()
-        const prevContentsSize = this.getSizePlus(prevContents)
-        const nextContentsSize = this.getSizePlus(nextContents)
+        const prevContentsSize = this.zone.getComponentsSizeSum(prevContents)
+        const nextContentsSize = this.zone.getComponentsSizeSum(nextContents)
         const allContentsSize = prevContentsSize + nextContentsSize
         return {
           all: allContentsSize,
@@ -162,45 +140,16 @@
         }
       },
 
-      // Get element's total offset top
-      //
-      offsetTop(element) {
-        let offset = element.offsetTop
-        if(element.offsetParent != null) {
-          offset += this.offsetTop(element.offsetParent)
-        }
-        return offset
-      },
-
-      // Get element's total offset left
-      //
-      offsetLeft(element) {
-        let offset = element.offsetLeft
-        if(element.offsetParent != null) {
-          offset += this.offsetLeft(element.offsetParent)
-        }
-        return offset
-      },
-
-      // Get mouse position
-      // (x or y, depending on the zone's orientation)
-      //
-      mousePosition(event) {
-        return event[this.zone.isHorizontal ? 'pageX' : 'pageY']
-      },
-
       // Get own size
-      // (width or height, depending on the zone's orientation)
       //
-      handleSize() {
-        return this.getSize(this.$el)
+      getOwnSize() {
+        return this.zone.getElementSize(this.$el)
       },
 
       // Get own offset position
-      // (width or height, depending on the zone's orientation)
       //
-      handleOffsetPosition() {
-        return this.getOffsetPosition(this.$el)
+      getOwnOffsetPosition() {
+        return this.zone.getElementOffsetPosition(this.$el)
       },
 
       // Handle mouse up event
@@ -221,9 +170,9 @@
         this.canDrag = true
 
         // Basic properties
-        const handleSize = this.handleSize()
-        const mousePosition = this.mousePosition(event)
-        const handleOffsetPosition = this.handleOffsetPosition()
+        const handleSize = this.getOwnSize()
+        const mousePosition = this.zone.getEventMousePosition(event)
+        const handleOffsetPosition = this.getOwnOffsetPosition()
 
         // Determine the maximum width when pressed
         this.todoContentsMaxSize = this.getLiveContentsSize().all
@@ -233,10 +182,10 @@
         this.mouseHandleOffsetNext = handleSize - this.mouseHandleOffsetPrev
 
         // The absolute position of the next handle element or the zone's end
-        const { next: nextHandle } = this.getHandle()
+        const { next: nextHandle } = this.getAdjacentHandles()
         this.nextHandleOffsetPosition = nextHandle
-          ? this.getOffsetPosition(nextHandle.$el)
-          : this.getOffsetPosition(this.zone.$el) + this.getSize(this.zone.$el)
+          ? this.zone.getElementOffsetPosition(nextHandle.$el)
+          : this.zone.getElementOffsetPosition(this.zone.$el) + this.zone.getElementSize(this.zone.$el)
 
         // Bind events
         this.bindMouseEvents()
@@ -250,16 +199,16 @@
         if (this.disabled || !this.canDrag) return false
 
         // Mouse positioning
-        const mousePosition = this.mousePosition(event)
+        const mousePosition = this.zone.getEventMousePosition(event)
 
         // The position of the movable handle
-        const handleOffsetPosition = this.handleOffsetPosition()
+        const handleOffsetPosition = this.getOwnOffsetPosition()
 
         // The position of the zone
-        const zoneOffsetPosition = this.getOffsetPosition(this.zone.$el)
+        const zoneOffsetPosition = this.zone.getElementOffsetPosition(this.zone.$el)
 
         // Adjacent handles
-        const { prev: prevHandle, next: nextHandle } = this.getHandle()
+        const { prev: prevHandle, next: nextHandle } = this.getAdjacentHandles()
 
         // Pending content components
         const {
@@ -271,7 +220,7 @@
         // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - (position of front adjacent handle + size of front adjacent handle)
         let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
           (!prevHandle ? zoneOffsetPosition : (
-            this.getOffsetPosition(prevHandle.$el) + this.getSize(prevHandle.$el)
+            this.zone.getElementOffsetPosition(prevHandle.$el) + this.zone.getElementSize(prevHandle.$el)
           ))
 
 
@@ -340,7 +289,7 @@
           const fixedContents = []
           let fixedContentsSize = 0
           contents.forEach(content => {
-            const contentSize = this.getSize(content.$el)
+            const contentSize = this.zone.getElementSize(content.$el)
             if (content.fixed) {
               fixedContentsSize += contentSize
               fixedContents.push(content)

@@ -10,6 +10,7 @@
 </template>
 
 <script>
+  import { getCss } from '@/utils/css'
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
   export default {
@@ -35,28 +36,15 @@
     },
 
     methods: {
-      getCss(element, attr) {
-        const css = document.defaultView.getComputedStyle(element, null)
-        return attr ? css[attr] : css
-      },
-
-      getSize(element) {
-        return element.getBoundingClientRect()[this.zone.isHorizontal ? 'width' : 'height']
-      },
-
-      getSizeAttr(type) {
-        return `${type}${this.zone.isHorizontal ? 'Width' : 'Height'}`
-      },
-
       getMinSize() {
         if (this.fixed) {
-          return this.getSize(this.$el)
+          return this.zone.getElementSize(this.$el)
         } else {
-          let minSize = this.getCss(this.$el, this.getSizeAttr('min'))
+          let minSize = getCss(this.$el, this.zone.getSizeAttr('min'))
           if (minSize === '0px') {
             minSize = 0
           } else if (minSize.includes('%')) {
-            minSize = parseFloat(minSize) / 100 * this.getSize(this.$parent.$el)
+            minSize = parseFloat(minSize) / 100 * this.zone.getElementSize(this.$parent.$el)
           } else if (minSize.includes('px')) {
             minSize = parseFloat(minSize)
           }
@@ -69,11 +57,11 @@
 
       getMaxSize() {
         if (this.fixed) {
-          return this.getSize(this.$el)
+          return this.zone.getElementSize(this.$el)
         } else {
-          let maxSize = this.getCss(this.$el, this.getSizeAttr('max'))
+          let maxSize = getCss(this.$el, this.zone.getSizeAttr('max'))
           if (maxSize.includes('%')) {
-            maxSize = parseFloat(maxSize) / 100 * this.getSize(this.$parent.$el)
+            maxSize = parseFloat(maxSize) / 100 * this.zone.getElementSize(this.$parent.$el)
           } else if (maxSize.includes('px')) {
             maxSize = parseFloat(maxSize)
           }
@@ -99,11 +87,7 @@
       style() {
         const style = {}
         if (!this.fixed && this.size !== null) {
-          if (this.zone.isHorizontal) {
-            style.width = this.size + 'px'
-          } else {
-            style.height = this.size + 'px'
-          }
+          style[this.zone.sizeAttr] = this.size + 'px'
         }
         return style
       },
