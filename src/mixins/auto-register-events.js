@@ -1,14 +1,28 @@
-const autoRegisterEvents = function(hookName = 'created') {
-  return {
-    [hookName]() {
-      for (const [name, func] of Object.entries(this.$options.events)) {
-        this.$on(name, func)
-      }
-    },
+const registerEvents = function(vm) {
+  for (const [name, func] of Object.entries(vm.$options.events)) {
+    vm.$on(name, func)
   }
 }
 
+const getMixinHook = function(name = 'created') {
+  if (getMixinHook.hooks.hasOwnProperty(name)) {
+    return getMixinHook.hooks[name]
+  }
+
+  const hook = {
+    [name](options) {
+      registerEvents(this)
+    },
+  }
+
+  getMixinHook.hooks[name] = hook
+  return hook
+}
+getMixinHook.hooks = {}
+
 export default {
-  created: () => autoRegisterEvents('created'),
-  mounted: () => autoRegisterEvents('mounted'),
+  now: registerEvents,
+  onBeforeCreate: () => getMixinHook('beforeCreate'),
+  onCreated: () => getMixinHook('created'),
+  onMounted: () => getMixinHook('mounted'),
 }

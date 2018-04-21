@@ -15,15 +15,11 @@
   import { isVueComponentTag } from '@/utils/vue'
   import autoRegisterEvents from '@/mixins/auto-register-events'
 
-  const updateChildrenList = debounce(function() {
-    this.children = [...this.$children]
-  }, 10)
-
   export default {
     name: 'drag-zone',
 
     mixins: [
-      autoRegisterEvents.mounted(),
+      autoRegisterEvents.onCreated(),
     ],
 
     props: {
@@ -31,12 +27,17 @@
       'vertical': Boolean,
     },
 
-    mounted() {
-      this.updateChildrenList()
-      updateChildrenList.flush()
+    beforeCreate() {
+      this.updateChildrenListDebounced = debounce(() => this.updateChildrenList(), 10)
+    },
 
-      this.updateContentsSize(this.contents,
-        this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles))
+    mounted() {
+      this.$nextTick(() => {
+        this.updateChildrenList()
+
+        this.updateContentsSize(this.contents,
+          this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles))
+      })
     },
 
     data: () => ({
@@ -75,7 +76,9 @@
     },
 
     methods: {
-      updateChildrenList,
+      updateChildrenList() {
+        this.children = [...this.$children]
+      },
 
       // Get size
       //
@@ -132,6 +135,8 @@
       // Update size of zontent components
       //
       updateContentsSize(contents, todoContentsSize) {
+        console.debug('updateContentsSize')
+
         const average = todoContentsSize / contents.length
         const todoContents = []
         const fixedContents = []
@@ -170,11 +175,11 @@
 
     events: {
       childMounted(component) {
-        this.updateChildrenList()
+        this.updateChildrenListDebounced()
       },
 
       childDestroyed(component) {
-        this.updateChildrenList()
+        this.updateChildrenListDebounced()
       },
     },
   }
