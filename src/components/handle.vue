@@ -307,6 +307,12 @@
 
 <style scoped>
   .drag-handle {
+    padding: 0 !important;
+    margin: 0 !important;
+
+    position: static;
+    display: block;
+
     background: #2196f3;
 
     user-select: none;

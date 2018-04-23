@@ -106,7 +106,11 @@
 
 <style scoped>
   .drag-content {
-    /*display: inline-block;*/
+    padding: 0 !important;
+    margin: 0 !important;
+
+    position: static;
+    display: block;
 
     background: rgba(0, 0, 0, 0.1);
 

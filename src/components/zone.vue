@@ -246,17 +246,23 @@
 </script>
 
 <style scoped>
+  .drag-content > .drag-zone {
+    width: 100%;
+    height: 100%;
+  }
+
   .drag-zone {
-    position: relative;
+    position: static;
+
     display: flex;
     justify-content: space-between;
   }
 
   .drag-zone.horizontal {
-    flex-direction: row;
+    flex-direction: row !important;
   }
 
   .drag-zone.vertical {
-    flex-direction: column;
+    flex-direction: column !important;
   }
 </style>
