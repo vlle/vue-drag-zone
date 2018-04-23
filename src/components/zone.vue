@@ -10,7 +10,7 @@
 </template>
 
 <script>
-  import debounce from 'lodash/debounce'
+  import ResizeSensor from 'css-element-queries/src/ResizeSensor'
 
   import { isVueComponentTag } from '@/utils/vue'
   import autoRegisterEvents from '@/mixins/auto-register-events'
@@ -27,22 +27,35 @@
       'vertical': Boolean,
     },
 
-    beforeCreate() {
-      this.updateChildrenListDebounced = debounce(() => this.updateChildrenList(), 10)
-    },
-
     mounted() {
+      this.bindEvents()
+
       this.$nextTick(() => {
         this.updateChildrenList()
+        this.resetContentsSize()
 
-        this.updateContentsSize(this.contents,
-          this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles))
+        this.initialized = true
       })
     },
 
+    beforeDestroy() {
+      this.unbindEvents()
+    },
+
     data: () => ({
+      initialized: false,
+      resizeSensor: undefined,
+      size: undefined,
       children: [],
     }),
+
+    watch: {
+      // Called on orientation change
+      //
+      isHorizontal() {
+        this.handleResize()
+      }
+    },
 
     computed: {
       isHorizontal() {
@@ -77,6 +90,7 @@
 
     methods: {
       updateChildrenList() {
+        console.debug('updateChildrenList')
         this.children = [...this.$children]
       },
 
@@ -132,7 +146,15 @@
         return event[this.isHorizontal ? 'pageX' : 'pageY']
       },
 
-      // Update size of zontent components
+      // Reset size of content components
+      //
+      resetContentsSize() {
+        console.debug('resetContentsSize')
+        const todoContentsSize = this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles)
+        this.updateContentsSize(this.contents, todoContentsSize)
+      },
+
+      // Update size of content components
       //
       updateContentsSize(contents, todoContentsSize) {
         console.debug('updateContentsSize')
@@ -171,15 +193,53 @@
           component.size = (todoContentsSize - fixedContentsSize) / todoContents.length
         })
       },
+
+      handleResize() {
+        if (!this.initialized) {
+          return false
+        }
+
+        const oldSize = this.size
+        const newSize = this.getElementSize(this.$el)
+        const scale = newSize / oldSize
+
+        if (scale === 1) {
+          return
+        }
+
+        console.debug('handleResize')
+        this.size = newSize
+        // this.contents.forEach((o) => o.scale(scale))
+
+        this.resetContentsSize() // DEBUG
+    },
+
+      bindEvents() {
+        this.resizeSensor = new ResizeSensor(this.$el, this.handleResize)
+      },
+
+      unbindEvents() {
+        if (this.resizeSensor) {
+          this.resizeSensor.detach()
+        }
+      },
     },
 
     events: {
       childMounted(component) {
-        this.updateChildrenListDebounced()
+        if (!this.initialized) {
+          return false
+        }
+
+        this.updateChildrenList()
       },
 
       childDestroyed(component) {
-        this.updateChildrenListDebounced()
+        if (!this.initialized) {
+          return false
+        }
+
+        this.updateChildrenList()
       },
     },
   }

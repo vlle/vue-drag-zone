@@ -29,10 +29,33 @@
 
     data() {
       return {
-        sizeAttr: null,
+        size_: null,
         isMinSize: false,
         isMaxSize: false
       }
+    },
+
+    computed: {
+      size: {
+        get() {
+          return this.size_
+        },
+        set(val) {
+          this.size_ = val
+        }
+      },
+
+      isThreshold() {
+        return this.isMinSize || this.isMaxSize
+      },
+
+      style() {
+        const style = {}
+        if (!this.fixed && this.size !== null) {
+          style[this.zone.sizeAttr] = this.size + 'px'
+        }
+        return style
+      },
     },
 
     methods: {
@@ -67,31 +90,17 @@
           }
           return maxSize
         }
-      }
+      },
+
+      scale(scale) {
+        let size = this.size
+        if (size === null) {
+          size = this.zone.getElementSize(this.$el)
+        }
+        size *= scale
+        this.size = size
+      },
     },
-
-    computed: {
-      size: {
-        get() {
-          return this.sizeAttr
-        },
-        set(val) {
-          this.sizeAttr = val
-        }
-      },
-
-      isThreshold() {
-        return this.isMinSize || this.isMaxSize
-      },
-
-      style() {
-        const style = {}
-        if (!this.fixed && this.size !== null) {
-          style[this.zone.sizeAttr] = this.size + 'px'
-        }
-        return style
-      },
-    }
   }
 </script>
 
