@@ -19,7 +19,7 @@ module.exports = merge(baseConfig, {
     library: 'vuelleDragZone',
     libraryTarget: 'umd'
   },
-  devtool: '#source-map',
+  devtool: 'source-map',
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
