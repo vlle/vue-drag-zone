@@ -29,20 +29,60 @@
 
     data() {
       return {
-        size_: null,
+        sizeProportion_: 1,
         isMinSize: false,
         isMaxSize: false
       }
     },
 
     computed: {
-      size: {
+      sizeProportion: {
         get() {
-          return this.size_
+          return this.sizeProportion_
         },
         set(val) {
-          this.size_ = val
-        }
+          if (!isFinite(val) || typeof val !== 'number') {
+            return
+          }
+          const max = this.zone.contents.length
+          this.sizeProportion_ = (val >= max ? max : (val <= 0 ? 0 : val))
+        },
+      },
+
+      sizeFraction: {
+        get() {
+          return this.sizeProportion / this.zone.contents.length
+        },
+        set(val) {
+          this.sizeProportion = val * this.zone.contents.length
+        },
+      },
+
+      sizePercent: {
+        get() {
+          return this.sizeFraction * 100
+        },
+        set(val) {
+          this.sizeFraction = val / 100
+        },
+      },
+
+      sizePx: {
+        get() {
+          return this.zone.getElementSize(this.zone.$el) * this.sizeFraction
+        },
+        set(val) {
+          this.sizeFraction = val / this.zone.getElementSize(this.zone.$el)
+        },
+      },
+
+      size: {
+        get() {
+          return this.sizePx
+        },
+        set(val) {
+          this.sizePx = val
+        },
       },
 
       isThreshold() {
@@ -51,8 +91,8 @@
 
       style() {
         const style = {}
-        if (!this.fixed && this.size !== null) {
-          style[this.zone.sizeAttr] = this.size + 'px'
+        if (!this.fixed) {
+          style['flex-grow'] = this.sizeProportion
         }
         return style
       },
@@ -93,12 +133,7 @@
       },
 
       scale(scale) {
-        let size = this.size
-        if (size === null) {
-          size = this.zone.getElementSize(this.$el)
-        }
-        size *= scale
-        this.size = size
+        this.sizeProportion *= scale
       },
     },
   }
@@ -106,23 +141,15 @@
 
 <style scoped>
   .drag-content {
-    padding: 0 !important;
-    margin: 0 !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
 
     flex-shrink: 1 !important;
-    flex-grow: 1 !important;
+    flex-basis: 0 !important;
 
     position: static;
-    display: block;
 
     overflow: hidden;
-  }
-
-  .drag-content.horizontal {
-    height: 100%;
-  }
-
-  .drag-content.vertical {
-    width: 100%;
   }
 </style>

@@ -306,11 +306,8 @@
 
 <style scoped>
   .drag-handle {
-    padding: 0 !important;
-    margin: 0 !important;
-
-    flex-shrink: 0 !important;
     flex-grow: 0 !important;
+    flex-shrink: 0 !important;
 
     position: static;
     display: block;
@@ -322,13 +319,11 @@
 
   .drag-handle.horizontal {
     width: 10px;
-    height: 100%;
 
     cursor: col-resize;
   }
 
   .drag-handle.vertical {
-    width: 100%;
     height: 10px;
 
     cursor: row-resize;

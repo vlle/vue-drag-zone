@@ -5,8 +5,6 @@
 </template>
 
 <script>
-  import ResizeSensor from 'css-element-queries/src/ResizeSensor'
-
   import { isVueComponentTag } from '@/utils/vue'
   import autoRegisterEvents from '@/mixins/auto-register-events'
 
@@ -23,10 +21,7 @@
     },
 
     mounted() {
-      this.bindEvents()
-
       this.$nextTick(() => {
-        this.handleResize()
         this.updateChildrenList()
         this.resetContentsSize()
 
@@ -34,31 +29,14 @@
       })
     },
 
-    beforeDestroy() {
-      this.unbindEvents()
-    },
-
     data: () => ({
       initialized: false,
-      resizeSensor: undefined,
-      size: undefined,
       children: [],
     }),
 
     watch: {
       orientation() {
         this.handleResize()
-      },
-
-      size(newSize, oldSize) {
-        if (!this.initialized || !isFinite(newSize / oldSize)) {
-          return
-        }
-
-        const scale = newSize / oldSize
-
-        // console.debug('watch: size')
-        this.contents.forEach((o) => o.scale(scale))
       },
     },
 
@@ -159,7 +137,7 @@
       //
       resetContentsSize() {
         // console.debug('resetContentsSize')
-        const todoContentsSize = this.size - this.getComponentsSizeSum(this.handles)
+        const todoContentsSize = this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles)
         this.updateContentsSize(this.contents, todoContentsSize)
       },
 
@@ -202,20 +180,6 @@
           component.size = (todoContentsSize - fixedContentsSize) / todoContents.length
         })
       },
-
-      handleResize() {
-        this.size = this.getElementSize(this.$el)
-      },
-
-      bindEvents() {
-        this.resizeSensor = new ResizeSensor(this.$el, this.handleResize)
-      },
-
-      unbindEvents() {
-        if (this.resizeSensor) {
-          this.resizeSensor.detach()
-        }
-      },
     },
 
     events: {
@@ -240,13 +204,15 @@
 
 <style scoped>
   .drag-content > .drag-zone {
-    width: 100%;
-    height: 100%;
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    align-self: stretch !important;
   }
 
   .drag-zone {
     display: flex !important;
     flex-wrap: nowrap !important;
+    align-items: stretch !important;
 
     justify-content: space-between;
 
