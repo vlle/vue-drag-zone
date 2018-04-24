@@ -112,8 +112,6 @@
     position: static;
     display: block;
 
-    background: rgba(0, 0, 0, 0.1);
-
     overflow: hidden;
   }
 
