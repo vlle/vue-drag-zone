@@ -1,11 +1,10 @@
 <template>
   <div class="drag-handle"
     @mousedown="handleMouseDown"
-    :class="{
-      'disabled': disabled,
-      'horizontal': zone.isHorizontal,
-      'vertical': zone.isVertical,
-    }">
+    :class="[
+      zone.orientation,
+      {'disabled': disabled},
+  ]">
     <slot></slot>
   </div>
 </template>

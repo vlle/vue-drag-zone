@@ -1,10 +1,10 @@
 <template>
   <div class="drag-content"
-    :class="{
-      'threshold': isThreshold,
-      'horizontal': zone.isHorizontal,
-      'vertical': zone.isVertical,
-  }" :style="style">
+    :class="[
+      zone.orientation,
+      {'threshold': isThreshold},
+    ]"
+  :style="style">
     <slot></slot>
   </div>
 </template>

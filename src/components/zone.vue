@@ -1,12 +1,7 @@
 <template>
-  <div class="drag-zone"
-    :class="{
-      'horizontal': isHorizontal,
-      'vertical': isVertical,
-  }">
+  <div class="drag-zone" :class="orientation">
     <slot></slot>
   </div>
-
 </template>
 
 <script>
@@ -50,14 +45,16 @@
     }),
 
     watch: {
-      // Called on orientation change
-      //
-      isHorizontal() {
+      orientation() {
         this.handleResize()
       }
     },
 
     computed: {
+      orientation() {
+        return this.isHorizontal ? 'horizontal' : 'vertical'
+      },
+
       isHorizontal() {
         return this.horizontal || !this.vertical
       },
