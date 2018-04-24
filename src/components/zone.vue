@@ -245,10 +245,12 @@
   }
 
   .drag-zone {
-    position: static;
+    display: flex !important;
+    flex-wrap: nowrap !important;
 
-    display: flex;
     justify-content: space-between;
+
+    position: static;
   }
 
   .drag-zone.horizontal {

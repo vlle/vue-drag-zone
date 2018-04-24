@@ -109,6 +109,9 @@
     padding: 0 !important;
     margin: 0 !important;
 
+    flex-shrink: 1 !important;
+    flex-grow: 1 !important;
+
     position: static;
     display: block;
 
