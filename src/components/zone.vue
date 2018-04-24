@@ -26,6 +26,7 @@
       this.bindEvents()
 
       this.$nextTick(() => {
+        this.handleResize()
         this.updateChildrenList()
         this.resetContentsSize()
 
@@ -47,7 +48,18 @@
     watch: {
       orientation() {
         this.handleResize()
-      }
+      },
+
+      size(newSize, oldSize) {
+        if (!this.initialized || !isFinite(newSize / oldSize)) {
+          return
+        }
+
+        const scale = newSize / oldSize
+
+        console.debug('watch: size')
+        this.contents.forEach((o) => o.scale(scale))
+      },
     },
 
     computed: {
@@ -147,7 +159,7 @@
       //
       resetContentsSize() {
         console.debug('resetContentsSize')
-        const todoContentsSize = this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles)
+        const todoContentsSize = this.size - this.getComponentsSizeSum(this.handles)
         this.updateContentsSize(this.contents, todoContentsSize)
       },
 
@@ -192,24 +204,8 @@
       },
 
       handleResize() {
-        if (!this.initialized) {
-          return false
-        }
-
-        const oldSize = this.size
-        const newSize = this.getElementSize(this.$el)
-        const scale = newSize / oldSize
-
-        if (scale === 1) {
-          return
-        }
-
-        console.debug('handleResize')
-        this.size = newSize
-        // this.contents.forEach((o) => o.scale(scale))
-
-        this.resetContentsSize() // DEBUG
-    },
+        this.size = this.getElementSize(this.$el)
+      },
 
       bindEvents() {
         this.resizeSensor = new ResizeSensor(this.$el, this.handleResize)
