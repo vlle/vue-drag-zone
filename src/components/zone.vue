@@ -57,7 +57,7 @@
 
         const scale = newSize / oldSize
 
-        console.debug('watch: size')
+        // console.debug('watch: size')
         this.contents.forEach((o) => o.scale(scale))
       },
     },
@@ -99,7 +99,7 @@
 
     methods: {
       updateChildrenList() {
-        console.debug('updateChildrenList')
+        // console.debug('updateChildrenList')
         this.children = [...this.$children]
       },
 
@@ -158,7 +158,7 @@
       // Reset size of content components
       //
       resetContentsSize() {
-        console.debug('resetContentsSize')
+        // console.debug('resetContentsSize')
         const todoContentsSize = this.size - this.getComponentsSizeSum(this.handles)
         this.updateContentsSize(this.contents, todoContentsSize)
       },
@@ -166,7 +166,7 @@
       // Update size of content components
       //
       updateContentsSize(contents, todoContentsSize) {
-        console.debug('updateContentsSize')
+        // console.debug('updateContentsSize')
 
         const average = todoContentsSize / contents.length
         const todoContents = []
