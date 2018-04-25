@@ -10,7 +10,6 @@
 </template>
 
 <script>
-  import { getVueComponentTag } from '@/utils/vue'
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
   export default {
@@ -96,20 +95,17 @@
         let isSegmentEnd = false
         allComponents.forEach(component => {
           const isCurrent = component === this
-          const componentTag = getVueComponentTag(component)
           isSegmented = isSegmented || isCurrent
-          if (componentTag) {
-            if (componentTag === 'drag-content') {
-              all.push(component)
-              if (!isSegmented) {
-                prev.push(component)
-              } else if (!isSegmentEnd) {
-                next.push(component)
-              }
-            } else {
-              if (!isCurrent) {
-                (isSegmented) ? (isSegmentEnd = true) : prev = []
-              }
+          if (this.zone.isContentComponent(component)) {
+            all.push(component)
+            if (!isSegmented) {
+              prev.push(component)
+            } else if (!isSegmentEnd) {
+              next.push(component)
+            }
+          } else {
+            if (!isCurrent) {
+              (isSegmented) ? (isSegmentEnd = true) : prev = []
             }
           }
         })

@@ -23,14 +23,10 @@
     mounted() {
       this.$nextTick(() => {
         this.updateChildrenList()
-        this.resetContentsSize()
-
-        this.initialized = true
       })
     },
 
     data: () => ({
-      initialized: false,
       children: [],
     }),
 
@@ -67,11 +63,11 @@
       },
 
       contents() {
-        return this.children.filter((child) => isVueComponentTag(child, 'drag-content'))
+        return this.children.filter((child) => this.isContentComponent(child))
       },
 
       handles() {
-        return this.children.filter((child) => isVueComponentTag(child, 'drag-handle'))
+        return this.children.filter((child) => this.isHandleComponent(child))
       },
     },
 
@@ -79,6 +75,14 @@
       updateChildrenList() {
         // console.debug('updateChildrenList')
         this.children = [...this.$children]
+      },
+
+      isContentComponent(component) {
+        return isVueComponentTag(component, 'drag-content')
+      },
+
+      isHandleComponent(component) {
+        return isVueComponentTag(component, 'drag-handle')
       },
 
       // Get size
@@ -136,16 +140,12 @@
       // Reset size of content components
       //
       resetContentsSize() {
-        // console.debug('resetContentsSize')
-        const todoContentsSize = this.getElementSize(this.$el) - this.getComponentsSizeSum(this.handles)
-        this.updateContentsSize(this.contents, todoContentsSize)
+        this.contents.forEach((content) => content.reset())
       },
 
       // Update size of content components
       //
       updateContentsSize(contents, todoContentsSize) {
-        // console.debug('updateContentsSize')
-
         const average = todoContentsSize / contents.length
         const todoContents = []
         const fixedContents = []
@@ -183,20 +183,28 @@
     },
 
     events: {
-      childMounted(component) {
-        if (!this.initialized) {
-          return false
-        }
-
+      childCreated(component) {
         this.updateChildrenList()
       },
 
-      childDestroyed(component) {
-        if (!this.initialized) {
-          return false
-        }
+      childMounted(component) {
+      },
 
+      childDestroyed(component) {
         this.updateChildrenList()
+
+        if (this.contents.length && this.isContentComponent(component)) {
+          // distribute freed content space to other contentent components
+
+          const fractionSum = this.contents.reduce((sum, comp) => sum + comp.sizeFraction, 0)
+          const scale = 1 / fractionSum
+
+          if (scale === Infinity) {
+            this.contents.forEach((comp) => comp.resetSize())
+          } else if (scale !== 1) {
+            this.contents.forEach((comp) => comp.scale(scale))
+          }
+        }
       },
     },
   }

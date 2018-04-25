@@ -27,9 +27,13 @@
       }
     },
 
+    created() {
+      this.resetSize()
+    },
+
     data() {
       return {
-        sizeProportion_: 1,
+        sizeProportion_: undefined,
         isMinSize: false,
         isMaxSize: false
       }
@@ -69,10 +73,10 @@
 
       sizePx: {
         get() {
-          return this.zone.getElementSize(this.zone.$el) * this.sizeFraction
+          return this.zone.getComponentsSizeSum(this.zone.contents) * this.sizeFraction
         },
         set(val) {
-          this.sizeFraction = val / this.zone.getElementSize(this.zone.$el)
+          this.sizeFraction = val / this.zone.getComponentsSizeSum(this.zone.contents)
         },
       },
 
@@ -130,6 +134,10 @@
           }
           return maxSize
         }
+      },
+
+      resetSize() {
+        this.sizeProportion = 1
       },
 
       scale(scale) {

@@ -12,7 +12,7 @@ export class NotADragZone extends Error {}
 
 export default {
   mixins: [
-    childLifecycleEvents(['mounted', 'destroyed']),
+    childLifecycleEvents(['created', 'mounted', 'destroyed']),
   ],
 
   computed: {
