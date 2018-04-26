@@ -149,14 +149,8 @@
 
 <style scoped>
   .drag-content {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: stretch !important;
-
     flex-shrink: 1 !important;
-    flex-basis: 0 !important;
-
-    position: static;
+    flex-basis: 0% !important;
 
     overflow: hidden;
   }

@@ -212,19 +212,15 @@
 
 <style scoped>
   .drag-content > .drag-zone {
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    align-self: stretch !important;
+    width: 100%;
+    height: 100%;
   }
 
   .drag-zone {
     display: flex !important;
     flex-wrap: nowrap !important;
     align-items: stretch !important;
-
-    justify-content: space-between;
-
-    position: static;
+    justify-content: space-between !important;
   }
 
   .drag-zone.horizontal {

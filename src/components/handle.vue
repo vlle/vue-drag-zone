@@ -302,14 +302,13 @@
 
 <style scoped>
   .drag-handle {
-    flex-grow: 0 !important;
-    flex-shrink: 0 !important;
-
-    position: static;
-    display: block;
+    flex: 0 1 auto !important;
 
     background: #2196f3;
 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
   }
 
@@ -326,7 +325,8 @@
   }
 
   .drag-handle.disabled {
-    opacity: .5;
+    opacity: 0.5;
+
     cursor: no-drop;
   }
 </style>
