@@ -143,6 +143,21 @@
         this.contents.forEach((content) => content.reset())
       },
 
+      // Adjust content components proportions
+      //
+      adjustContentProportions() {
+        const fractionSum = this.contents.reduce((sum, comp) => sum + comp.sizeFraction, 0)
+        const scale = 1 / fractionSum
+
+        if (scale === Infinity) {
+          // all contents have a size of 0. Reset them to distribute the space between them.
+          this.contents.forEach((comp) => comp.resetSize())
+        } else if (scale !== 1) {
+          // scale the contents. Note: scaling 0 size contents has no effect (0 * x = 0).
+          this.contents.forEach((comp) => comp.scale(scale))
+        }
+      },
+
       // Update size of content components
       //
       updateContentsSize(contents, todoContentsSize) {
@@ -194,16 +209,8 @@
         this.updateChildrenList()
 
         if (this.contents.length && this.isContentComponent(component)) {
-          // distribute freed content space to other contentent components
-
-          const fractionSum = this.contents.reduce((sum, comp) => sum + comp.sizeFraction, 0)
-          const scale = 1 / fractionSum
-
-          if (scale === Infinity) {
-            this.contents.forEach((comp) => comp.resetSize())
-          } else if (scale !== 1) {
-            this.contents.forEach((comp) => comp.scale(scale))
-          }
+          // distribute freed content space to other content components or remove overflow
+          this.adjustContentProportions()
         }
       },
     },
