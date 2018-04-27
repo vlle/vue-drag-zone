@@ -73,10 +73,10 @@
 
       sizePx: {
         get() {
-          return this.zone.getComponentsSizeSum(this.zone.contents) * this.sizeFraction
+          return this.zone.getElementSize(this.zone.$el) * this.sizeFraction
         },
         set(val) {
-          this.sizeFraction = val / this.zone.getComponentsSizeSum(this.zone.contents)
+          this.sizeFraction = val / this.zone.getElementSize(this.zone.$el)
         },
       },
 
