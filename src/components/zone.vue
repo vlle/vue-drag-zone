@@ -228,6 +228,8 @@
     flex-wrap: nowrap !important;
     align-items: stretch !important;
     justify-content: space-between !important;
+
+    overflow: hidden;
   }
 
   .drag-zone.horizontal {

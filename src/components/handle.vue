@@ -5,7 +5,9 @@
       zone.orientation,
       {'disabled': disabled},
   ]">
-    <slot></slot>
+    <div class="drag-handle-inner" :class="zone.orientation">
+      <slot></slot>
+    </div>
   </div>
 </template>
 
@@ -302,8 +304,12 @@
 
 <style scoped>
   .drag-handle {
-    flex: 0 1 auto !important;
+    flex: 0 0 auto !important;
 
+    position: relative;
+
+    width: 2px;
+    height: 2px;
     background: #2196f3;
 
     -webkit-user-select: none;
@@ -313,13 +319,13 @@
   }
 
   .drag-handle.horizontal {
-    width: 10px;
+    height: 100%;
 
     cursor: col-resize;
   }
 
   .drag-handle.vertical {
-    height: 10px;
+    width: 100%;
 
     cursor: row-resize;
   }
@@ -328,5 +334,31 @@
     opacity: 0.5;
 
     cursor: no-drop;
+  }
+
+  .drag-handle-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+
+    box-sizing: border-box;
+  }
+
+  .drag-handle-inner.horizontal {
+    left: 50%;
+    padding-top: 0;
+    padding-bottom: 0;
+    transform: translateX(-50%);
+  }
+
+  .drag-handle-inner.vertical {
+    top: 50%;
+    padding-left: 0;
+    padding-right: 0;
+    transform: translateY(-50%);
   }
 </style>
