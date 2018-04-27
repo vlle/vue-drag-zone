@@ -202,9 +202,6 @@
         this.updateChildrenList()
       },
 
-      childMounted(component) {
-      },
-
       childDestroyed(component) {
         this.updateChildrenList()
 
