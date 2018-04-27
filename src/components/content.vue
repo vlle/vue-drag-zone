@@ -111,7 +111,7 @@
           if (minSize === '0px') {
             minSize = 0
           } else if (minSize.includes('%')) {
-            minSize = parseFloat(minSize) / 100 * this.zone.getElementSize(this.$parent.$el)
+            minSize = parseFloat(minSize) / 100 * this.zone.getElementSize(this.zone.$el)
           } else if (minSize.includes('px')) {
             minSize = parseFloat(minSize)
           }
@@ -128,7 +128,7 @@
         } else {
           let maxSize = getCss(this.$el, this.zone.getSizeAttr('max'))
           if (maxSize.includes('%')) {
-            maxSize = parseFloat(maxSize) / 100 * this.zone.getElementSize(this.$parent.$el)
+            maxSize = parseFloat(maxSize) / 100 * this.zone.getElementSize(this.zone.$el)
           } else if (maxSize.includes('px')) {
             maxSize = parseFloat(maxSize)
           }
