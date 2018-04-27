@@ -20,10 +20,9 @@
       'vertical': Boolean,
     },
 
-    mounted() {
-      this.$nextTick(() => {
-        this.updateChildrenList()
-      })
+    beforeDestroy() {
+      // unregister events
+      autoRegisterEvents.off(this)
     },
 
     data: () => ({
@@ -73,7 +72,6 @@
 
     methods: {
       updateChildrenList() {
-        // console.debug('updateChildrenList')
         this.children = [...this.$children]
       },
 

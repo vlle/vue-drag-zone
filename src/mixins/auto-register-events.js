@@ -1,6 +1,12 @@
-const registerEvents = function(vm) {
+const registerEvents = function(vm, name) {
   for (const [name, func] of Object.entries(vm.$options.events)) {
     vm.$on(name, func)
+  }
+}
+
+const unregisterEvents = function(vm) {
+  for (const [name, func] of Object.entries(vm.$options.events)) {
+    vm.$off(name, func)
   }
 }
 
@@ -21,7 +27,8 @@ const getMixinHook = function(name = 'created') {
 getMixinHook.hooks = {}
 
 export default {
-  now: registerEvents,
+  on: registerEvents,
+  off: unregisterEvents,
   onBeforeCreate: () => getMixinHook('beforeCreate'),
   onCreated: () => getMixinHook('created'),
   onMounted: () => getMixinHook('mounted'),
