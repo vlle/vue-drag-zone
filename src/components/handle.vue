@@ -14,6 +14,8 @@
 <script>
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
+  export class IndexError extends Error {}
+
   export default {
     name: 'drag-handle',
 
@@ -38,82 +40,78 @@
       }
     },
 
-    methods: {
-      // Split front and rear handle components
+    computed: {
+      // influenced content components (between this and adjacent handles)
       //
       // @return Object
-      //   (Array) all   - All handles including this one
-      //   (Array) prev  - All handles before this one
-      //   (Array) next  - All handles after this one
+      //   (Array) all   - All influenced content components
+      //   (Array) prev  - All influenced content components before this
+      //   (Array) next  - All influenced content components between this and the next handle
       //
-      getHandles() {
-        const allHandles = this.zone.handles
-        const prev = []
-        const next = []
-        let isSegmented = false
-        allHandles.forEach(handle => {
-          const isCurrent = handle === this
-          isSegmented = isSegmented || isCurrent
-          if (!isCurrent) {
-            (isSegmented ? next : prev).push(handle)
-          }
-        })
-        return { all: allHandles, prev, next }
-      },
-
-      // Split adjacent handle components
-      //
-      // @return Object
-      //   (Array) all   - All handles including this one
-      //   (Array) prev  - All handles before this one
-      //   (Array) next  - All handles after this one
-      //
-      getAdjacentHandles() {
-        const allHandles = this.zone.handles
-        let prev = null
-        let next = null
-        allHandles.forEach((handle, index) => {
-          if (handle === this) {
-            prev = allHandles[index - 1]
-            next = allHandles[index + 1]
-          }
-        })
-        return { prev, next }
-      },
-
-      // Split adjacent content components
-      //
-      // @return Object
-      //   (Array) all   - All content components
-      //   (Array) prev  - All content components between this and the previous handle
-      //   (Array) next  - All content components between this and the next handle
-      //
-      getTodoContents() {
+      todoContents() {
         const allComponents = this.zone.children
-        const all = []
-        const next = []
-        let prev = []
-        let isSegmented = false
-        let isSegmentEnd = false
-        allComponents.forEach(component => {
-          const isCurrent = component === this
-          isSegmented = isSegmented || isCurrent
-          if (this.zone.isContentComponent(component)) {
-            all.push(component)
-            if (!isSegmented) {
-              prev.push(component)
-            } else if (!isSegmentEnd) {
-              next.push(component)
-            }
-          } else {
-            if (!isCurrent) {
-              (isSegmented) ? (isSegmentEnd = true) : prev = []
-            }
-          }
-        })
+        const {prev: prevHandle, next: nextHandle} = this.adjacentHandles
+
+        const ownIndex = allComponents.indexOf(this)
+
+        const prevIndex = prevHandle
+          ? allComponents.indexOf(prevHandle)
+          : null
+
+        const nextIndex = nextHandle
+          ? allComponents.indexOf(nextHandle)
+          : null
+
+        if (ownIndex === -1) throw new IndexError()
+        if (prevIndex === -1) throw new IndexError()
+        if (nextIndex === -1) throw new IndexError()
+
+        const prev = allComponents.slice(prevIndex !== null ? prevIndex + 1 : 0,
+          ownIndex)
+        const next = allComponents.slice(ownIndex + 1,
+          nextIndex !== null ? nextIndex : allComponents.length)
+        const all = [...prev, ...next]
+
         return { all, prev, next }
       },
 
+      // adjacent handle components
+      //
+      // @return Object
+      //   (Array) prev  - Previous handle
+      //   (Array) next  - Next handle
+      //
+      adjacentHandles() {
+        const otherHandles = this.otherHandles
+
+        const prev = otherHandles.prev[otherHandles.prev.length - 1] || undefined
+        const next = otherHandles.next[0] || undefined
+
+        return { prev, next }
+      },
+
+      // other handle components
+      //
+      // @return Object
+      //   (Array) all   - All other handles
+      //   (Array) prev  - All handles before this one
+      //   (Array) next  - All handles after this one
+      //
+      otherHandles() {
+        const handles = this.zone.handles
+
+        const ownIndex = handles.indexOf(this)
+        if (ownIndex === -1) throw new IndexError()
+
+        const prev = handles.slice(0, ownIndex)
+        const next = handles.slice(ownIndex + 1)
+        const all = [...prev, ...next]
+
+        return { all, prev, next }
+      },
+    },
+
+    methods: {
       // Get the size of components
       //
       // @return Object
@@ -123,10 +121,9 @@
       //
       getLiveContentsSize() {
         const {
-          all: allContents,
           prev: prevContents,
           next: nextContents
-        } = this.getTodoContents()
+        } = this.todoContents
         const prevContentsSize = this.zone.getComponentsSizeSum(prevContents)
         const nextContentsSize = this.zone.getComponentsSizeSum(nextContents)
         const allContentsSize = prevContentsSize + nextContentsSize
@@ -179,7 +176,7 @@
         this.mouseHandleOffsetNext = handleSize - this.mouseHandleOffsetPrev
 
         // The absolute position of the next handle element or the zone's end
-        const { next: nextHandle } = this.getAdjacentHandles()
+        const nextHandle = this.adjacentHandles.next
         this.nextHandleOffsetPosition = nextHandle
           ? this.zone.getElementOffsetPosition(nextHandle.$el)
           : this.zone.getElementOffsetPosition(this.zone.$el) + this.zone.getElementSize(this.zone.$el)
@@ -205,14 +202,13 @@
         const zoneOffsetPosition = this.zone.getElementOffsetPosition(this.zone.$el)
 
         // Adjacent handles
-        const { prev: prevHandle, next: nextHandle } = this.getAdjacentHandles()
+        const { prev: prevHandle, next: nextHandle } = this.adjacentHandles
 
         // Pending content components
         const {
-          all: allContents,
           prev: prevContents,
           next: nextContents
-        } = this.getTodoContents()
+        } = this.todoContents
 
         // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - (position of front adjacent handle + size of front adjacent handle)
         let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
