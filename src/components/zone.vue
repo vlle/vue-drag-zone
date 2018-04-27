@@ -29,12 +29,6 @@
       children: [],
     }),
 
-    watch: {
-      orientation() {
-        this.handleResize()
-      },
-    },
-
     computed: {
       orientation() {
         return this.isHorizontal ? 'horizontal' : 'vertical'
