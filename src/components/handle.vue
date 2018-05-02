@@ -12,6 +12,8 @@
 </template>
 
 <script>
+  import throttle from 'lodash/throttle'
+
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
   export class IndexError extends Error {}
@@ -28,6 +30,10 @@
         type: Boolean,
         default: false
       }
+    },
+
+    created() {
+      this.handleMouseMoveThrottled = throttle(this.handleMouseMove, 25)
     },
 
     data() {
@@ -286,13 +292,13 @@
       // Bind mouse events
       bindMouseEvents() {
         document.addEventListener('mouseup', this.handleMouseUp)
-        document.addEventListener('mousemove', this.handleMouseMove)
+        document.addEventListener('mousemove', this.handleMouseMoveThrottled)
       },
 
       // Release mouse events
       removeMouseEvents() {
         document.removeEventListener('mouseup', this.handleMouseUp)
-        document.removeEventListener('mousemove', this.handleMouseMove)
+        document.removeEventListener('mousemove', this.handleMouseMoveThrottled)
       }
     }
   }
