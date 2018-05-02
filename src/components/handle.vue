@@ -246,26 +246,15 @@
         // maximum size of the rear contents  === (specific value || moving range - minimum size of the front contents)
         // minimum size of the rear contents  === (specific value || 0)
 
-        let prevContentsMinSizePlus = prevContents.reduce((plus, content) => plus + content.getMinSize(), 0)
-        let nextContentsMinSizePlus = nextContents.reduce((plus, content) => plus + content.getMinSize(), 0)
-        let prevContentsMaxSizePlus = prevContents.reduce((plus, content) => plus + content.getMaxSize(), 0)
-        let nextContentsMaxSizePlus = nextContents.reduce((plus, content) => plus + content.getMaxSize(), 0)
+        const prevContentsMinSizePlus = prevContents.reduce((plus, content) => plus + content.getMinSize(), 0) || 0
 
-        if (typeof prevContentsMinSizePlus === 'string') {
-          prevContentsMinSizePlus = 0
-        }
+        const nextContentsMinSizePlus = nextContents.reduce((plus, content) => plus + content.getMinSize(), 0) || 0
 
-        if (typeof nextContentsMinSizePlus === 'string') {
-          nextContentsMinSizePlus = 0
-        }
+        const prevContentsMaxSizePlus = prevContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
+          this.todoContentsMaxSize - nextContentsMinSizePlus
 
-        if (typeof prevContentsMaxSizePlus === 'string') {
-          prevContentsMaxSizePlus = this.todoContentsMaxSize - nextContentsMinSizePlus
-        }
-
-        if (typeof nextContentsMaxSizePlus === 'string') {
-          nextContentsMaxSizePlus = this.todoContentsMaxSize - prevContentsMinSizePlus
-        }
+        const nextContentsMaxSizePlus = nextContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
+          this.todoContentsMaxSize - prevContentsMinSizePlus
 
         // total front size to be operated > maximum front size
         // total front size to be operated < minimum front size

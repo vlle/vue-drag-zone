@@ -115,7 +115,7 @@
           } else if (minSize.includes('px')) {
             minSize = parseFloat(minSize)
           }
-          if (minSize < 0) {
+          if (minSize < 0 || typeof minSize !== 'number') {
             minSize = 0
           }
           return minSize
@@ -131,6 +131,9 @@
             maxSize = parseFloat(maxSize) / 100 * this.zone.getElementSize(this.zone.$el)
           } else if (maxSize.includes('px')) {
             maxSize = parseFloat(maxSize)
+          }
+          if (typeof maxSize !== 'number') {
+            maxSize = undefined
           }
           return maxSize
         }
