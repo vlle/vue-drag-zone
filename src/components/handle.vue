@@ -197,7 +197,8 @@
         this.todoContentsMaxSize = this.getLiveContentsSize().all
 
         // The mouse's offset relative to the current handle
-        this.mouseHandleOffsetPrev = mousePosition - handleOffsetPosition
+        // Note: the handle will be moved below the mouse if not already there
+        this.mouseHandleOffsetPrev = Math.floor(Math.max(0, Math.min(mousePosition - handleOffsetPosition, handleSize - 1)))
         this.mouseHandleOffsetNext = handleSize - this.mouseHandleOffsetPrev
 
         // The absolute position of the previous handle element's end or the zone's start
