@@ -106,8 +106,10 @@
       getMinSize() {
         if (this.fixed) {
           return this.zone.getElementSize(this.$el)
+
         } else {
           let minSize = getCss(this.$el, this.zone.getSizeAttr('min'))
+
           if (minSize === '0px') {
             minSize = 0
           } else if (minSize.includes('%')) {
@@ -115,9 +117,11 @@
           } else if (minSize.includes('px')) {
             minSize = parseFloat(minSize)
           }
+
           if (minSize < 0 || typeof minSize !== 'number') {
             minSize = 0
           }
+
           return minSize
         }
       },
@@ -125,16 +129,20 @@
       getMaxSize() {
         if (this.fixed) {
           return this.zone.getElementSize(this.$el)
+
         } else {
           let maxSize = getCss(this.$el, this.zone.getSizeAttr('max'))
+
           if (maxSize.includes('%')) {
             maxSize = parseFloat(maxSize) / 100 * this.zone.getElementSize(this.zone.$el)
           } else if (maxSize.includes('px')) {
             maxSize = parseFloat(maxSize)
           }
+
           if (typeof maxSize !== 'number') {
             maxSize = undefined
           }
+
           return maxSize
         }
       },

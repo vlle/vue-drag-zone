@@ -16,12 +16,12 @@
 
   import childOfDragZone from '@/mixins/child-of-drag-zone'
 
-  export class IndexError extends Error {}
-
   const CONTENT_THRESHOLDS_PREV_MIN = 2 ** 1
   const CONTENT_THRESHOLDS_PREV_MAX = 2 ** 2
   const CONTENT_THRESHOLDS_NEXT_MIN = 2 ** 3
   const CONTENT_THRESHOLDS_NEXT_MAX = 2 ** 4
+
+  export class IndexError extends Error {}
 
   export default {
     name: 'drag-handle',
@@ -43,12 +43,13 @@
 
     data() {
       return {
-        canDrag: false,
+        isDragging: false,
         contentThresholds: 0,
         todoContentsMaxSize: 0,
         mousePosition: 0,
         mouseHandleOffsetPrev: 0,
         mouseHandleOffsetNext: 0,
+        prevHandleEndOffsetPosition: 0,
         nextHandleOffsetPosition: 0,
       }
     },
@@ -137,9 +138,11 @@
           prev: prevContents,
           next: nextContents
         } = this.todoContents
+
         const prevContentsSize = this.zone.getComponentsSizeSum(prevContents)
         const nextContentsSize = this.zone.getComponentsSizeSum(nextContents)
         const allContentsSize = prevContentsSize + nextContentsSize
+
         return {
           all: allContentsSize,
           prev: prevContentsSize,
@@ -162,11 +165,12 @@
       // Handle mouse up event
       //
       handleMouseUp() {
-        this.canDrag = false
+        this.isDragging = false
         this.contentThresholds = 0
         this.mousePosition = 0
         this.mouseHandleOffsetPrev = 0
         this.mouseHandleOffsetNext = 0
+        this.prevHandleEndOffsetPosition = 0
         this.nextHandleOffsetPosition = 0
         this.removeMouseEvents()
       },
@@ -175,14 +179,19 @@
       //
       handleMouseDown(event) {
 
+        // Cancel if the handle is disabled
+        if (this.disabled) return false
+
         // Change the status
-        this.canDrag = true
+        this.isDragging = true
 
         // Basic properties
-        const handleSize = this.getOwnSize()
         const mousePosition = this.zone.getEventMousePosition(event)
         this.mousePosition = mousePosition
+        const handleSize = this.getOwnSize()
         const handleOffsetPosition = this.getOwnOffsetPosition()
+        const zoneOffsetPosition = this.zone.getElementOffsetPosition(this.zone.$el)
+        const { prev: prevHandle, next: nextHandle } = this.adjacentHandles
 
         // Determine the maximum width when pressed
         this.todoContentsMaxSize = this.getLiveContentsSize().all
@@ -191,11 +200,15 @@
         this.mouseHandleOffsetPrev = mousePosition - handleOffsetPosition
         this.mouseHandleOffsetNext = handleSize - this.mouseHandleOffsetPrev
 
-        // The absolute position of the next handle element or the zone's end
-        const nextHandle = this.adjacentHandles.next
+        // The absolute position of the previous handle element's end or the zone's start
+        this.prevHandleEndOffsetPosition = prevHandle
+          ? this.zone.getElementOffsetPosition(prevHandle.$el) + this.zone.getElementSize(prevHandle.$el)
+          : zoneOffsetPosition
+
+        // The absolute position of the next handle element's start or the zone's end
         this.nextHandleOffsetPosition = nextHandle
           ? this.zone.getElementOffsetPosition(nextHandle.$el)
-          : this.zone.getElementOffsetPosition(this.zone.$el) + this.zone.getElementSize(this.zone.$el)
+          : zoneOffsetPosition + this.zone.getElementSize(this.zone.$el)
 
         // Bind events
         this.bindMouseEvents()
@@ -205,8 +218,8 @@
       //
       handleMouseMove(event) {
 
-        // Cancel if the handle is disabled or not clicked
-        if (this.disabled || !this.canDrag) return false
+        // Cancel if the handle is not clicked
+        if (!this.isDragging) return false
 
         // Mouse positioning
         const mousePosition = this.zone.getEventMousePosition(event)
@@ -214,26 +227,14 @@
         if (mousePosition === this.mousePosition) return false
         this.mousePosition = mousePosition
 
-        // The position of the movable handle
-        const handleOffsetPosition = this.getOwnOffsetPosition()
-
-        // The position of the zone
-        const zoneOffsetPosition = this.zone.getElementOffsetPosition(this.zone.$el)
-
-        // Adjacent handles
-        const { prev: prevHandle, next: nextHandle } = this.adjacentHandles
-
         // Pending content components
-        const {
-          prev: prevContents,
-          next: nextContents
-        } = this.todoContents
+        const { prev: prevContents, next: nextContents } = this.todoContents
 
-        // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - (position of front adjacent handle + size of front adjacent handle)
-        let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev -
-          (!prevHandle ? zoneOffsetPosition : (
-            this.zone.getElementOffsetPosition(prevHandle.$el) + this.zone.getElementSize(prevHandle.$el)
-          ))
+        // Maximum size of the content components corresponding to this handle
+        const todoContentsMaxSize = this.todoContentsMaxSize
+
+        // Total size of the front adjacent content components to be processed = mouse position - mouse offset relative to current handle - position of front adjacent handle's end
+        let todoPrevContentsSize = mousePosition - this.mouseHandleOffsetPrev - this.prevHandleEndOffsetPosition
 
         // Total size of the rear adjacent content components to be processed = position of the rear adjacent handle - mouse position - mouse offset relative to current handle
         let todoNextContentsSize = this.nextHandleOffsetPosition - mousePosition - this.mouseHandleOffsetNext
@@ -246,51 +247,51 @@
 
         // maximum size of the front contents === (specific value || moving range - minimum size of the rear contents)
         const prevContentsMaxSizePlus = prevContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
-          this.todoContentsMaxSize - nextContentsMinSizePlus
+          todoContentsMaxSize - nextContentsMinSizePlus
 
         // maximum size of the rear contents  === (specific value || moving range - minimum size of the front contents)
         const nextContentsMaxSizePlus = nextContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
-          this.todoContentsMaxSize - prevContentsMinSizePlus
+          todoContentsMaxSize - prevContentsMinSizePlus
 
         // Some anti-spill handling
 
         if (todoPrevContentsSize < 0) {
           todoPrevContentsSize = 0
-        } else  if (todoPrevContentsSize > this.todoContentsMaxSize) {
-          todoPrevContentsSize = this.todoContentsMaxSize
+        } else  if (todoPrevContentsSize > todoContentsMaxSize) {
+          todoPrevContentsSize = todoContentsMaxSize
         }
 
         if (todoNextContentsSize < 0) {
           todoNextContentsSize = 0
-        } else if (todoNextContentsSize > this.todoContentsMaxSize) {
-          todoNextContentsSize = this.todoContentsMaxSize
+        } else if (todoNextContentsSize > todoContentsMaxSize) {
+          todoNextContentsSize = todoContentsMaxSize
         }
 
         if (todoPrevContentsSize < prevContentsMinSizePlus) {
           todoPrevContentsSize = prevContentsMinSizePlus
-          todoNextContentsSize = this.todoContentsMaxSize - todoPrevContentsSize
+          todoNextContentsSize = todoContentsMaxSize - todoPrevContentsSize
 
         } else if (todoPrevContentsSize > prevContentsMaxSizePlus) {
           todoPrevContentsSize = prevContentsMaxSizePlus
-          todoNextContentsSize = this.todoContentsMaxSize - todoPrevContentsSize
+          todoNextContentsSize = todoContentsMaxSize - todoPrevContentsSize
 
         } else if (todoNextContentsSize < nextContentsMinSizePlus) {
           todoNextContentsSize = nextContentsMinSizePlus
-          todoPrevContentsSize = this.todoContentsMaxSize - todoNextContentsSize
+          todoPrevContentsSize = todoContentsMaxSize - todoNextContentsSize
 
         } else if (todoNextContentsSize > nextContentsMaxSizePlus) {
           todoNextContentsSize = nextContentsMaxSizePlus
-          todoPrevContentsSize = this.todoContentsMaxSize - todoNextContentsSize
+          todoPrevContentsSize = todoContentsMaxSize - todoNextContentsSize
         }
 
-        if (todoPrevContentsSize + todoNextContentsSize !== this.todoContentsMaxSize) {
-          const averageOverflow = (todoPrevContentsSize + todoNextContentsSize - this.todoContentsMaxSize) / 2
+        if (todoPrevContentsSize + todoNextContentsSize !== todoContentsMaxSize) {
+          const averageOverflow = (todoPrevContentsSize + todoNextContentsSize - todoContentsMaxSize) / 2
           todoPrevContentsSize -= averageOverflow
           todoNextContentsSize -= averageOverflow
         }
 
         // console.debug(
-        //   `all-contents: ${prevContentsMinSizePlus + nextContentsMinSizePlus} <= ${todoPrevContentsSize + todoNextContentsSize} <= ${this.todoContentsMaxSize}\n`,
+        //   `all-contents: ${prevContentsMinSizePlus + nextContentsMinSizePlus} <= ${todoPrevContentsSize + todoNextContentsSize} <= ${todoContentsMaxSize}\n`,
         //   `prev-contents: ${prevContentsMinSizePlus} <= ${todoPrevContentsSize} <= ${prevContentsMaxSizePlus}\n`,
         //   `next-contents: ${nextContentsMinSizePlus} <= ${todoNextContentsSize} <= ${nextContentsMaxSizePlus}\n`)
 
@@ -326,9 +327,6 @@
         // Update all elements
         this.zone.updateContentsSize(prevContents, todoPrevContentsSize)
         this.zone.updateContentsSize(nextContents, todoNextContentsSize)
-        // this.$nextTick(() => {
-          // this.zone.updateContentsSize(nextContents, this.todoContentsMaxSize - this.getLiveContentsSize().prev)
-        // })
       },
 
       // Bind mouse events
