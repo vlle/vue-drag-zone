@@ -167,14 +167,14 @@
           } else {
             const contentMinSize = content.getMinSize()
             const contentMaxSize = content.getMaxSize()
-            const isMinSize = contentSize <= contentMinSize
-            const isMaxSize = contentSize >= contentMaxSize
-            content.isMinSize = isMinSize
-            content.isMaxSize = isMaxSize
+            const becomesMinSize = average <= contentMinSize
+            const becomesMaxSize = average >= contentMaxSize
+            content.isMinSize = becomesMinSize
+            content.isMaxSize = becomesMaxSize
 
-            if ((isMinSize && average < contentMinSize) || (isMaxSize && average > contentMaxSize)) {
-              content.size = isMinSize ? contentMinSize : contentMaxSize
-              fixedContentsSize += isMinSize ? contentMinSize : contentMaxSize
+            if ((becomesMinSize && average < contentMinSize) || (becomesMaxSize && average > contentMaxSize)) {
+              content.size = becomesMinSize ? contentMinSize : contentMaxSize
+              fixedContentsSize += becomesMinSize ? contentMinSize : contentMaxSize
               fixedContents.push(content)
 
             } else {

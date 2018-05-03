@@ -18,6 +18,11 @@
 
   export class IndexError extends Error {}
 
+  const CONTENT_THRESHOLDS_PREV_MIN = 2 ** 1
+  const CONTENT_THRESHOLDS_PREV_MAX = 2 ** 2
+  const CONTENT_THRESHOLDS_NEXT_MIN = 2 ** 3
+  const CONTENT_THRESHOLDS_NEXT_MAX = 2 ** 4
+
   export default {
     name: 'drag-handle',
 
@@ -39,7 +44,9 @@
     data() {
       return {
         canDrag: false,
+        contentThresholds: 0,
         todoContentsMaxSize: 0,
+        mousePosition: 0,
         mouseHandleOffsetPrev: 0,
         mouseHandleOffsetNext: 0,
         nextHandleOffsetPosition: 0,
@@ -156,6 +163,8 @@
       //
       handleMouseUp() {
         this.canDrag = false
+        this.contentThresholds = 0
+        this.mousePosition = 0
         this.mouseHandleOffsetPrev = 0
         this.mouseHandleOffsetNext = 0
         this.nextHandleOffsetPosition = 0
@@ -172,6 +181,7 @@
         // Basic properties
         const handleSize = this.getOwnSize()
         const mousePosition = this.zone.getEventMousePosition(event)
+        this.mousePosition = mousePosition
         const handleOffsetPosition = this.getOwnOffsetPosition()
 
         // Determine the maximum width when pressed
@@ -200,6 +210,9 @@
 
         // Mouse positioning
         const mousePosition = this.zone.getEventMousePosition(event)
+        // Cancel if not changed
+        if (mousePosition === this.mousePosition) return false
+        this.mousePosition = mousePosition
 
         // The position of the movable handle
         const handleOffsetPosition = this.getOwnOffsetPosition()
@@ -222,49 +235,89 @@
             this.zone.getElementOffsetPosition(prevHandle.$el) + this.zone.getElementSize(prevHandle.$el)
           ))
 
-
         // Total size of the rear adjacent content components to be processed = position of the rear adjacent handle - mouse position - mouse offset relative to current handle
         let todoNextContentsSize = this.nextHandleOffsetPosition - mousePosition - this.mouseHandleOffsetNext
 
-        // Some anti-spill handling
-        if (todoPrevContentsSize < 0) {
-          todoPrevContentsSize = 0
-        }
-        if (todoNextContentsSize < 0) {
-          todoNextContentsSize = 0
-        }
-        if (todoPrevContentsSize > this.todoContentsMaxSize) {
-          todoPrevContentsSize = this.todoContentsMaxSize
-        }
-        if (todoNextContentsSize > this.todoContentsMaxSize) {
-          todoNextContentsSize = this.todoContentsMaxSize
-        }
-
-        // Intercept on out of bound values
-        // maximum size of the front contents === (specific value || moving range - minimum size of the rear contents)
         // minimum size of the front contents === (specific value || 0)
-        // maximum size of the rear contents  === (specific value || moving range - minimum size of the front contents)
-        // minimum size of the rear contents  === (specific value || 0)
-
         const prevContentsMinSizePlus = prevContents.reduce((plus, content) => plus + content.getMinSize(), 0) || 0
 
+        // minimum size of the rear contents  === (specific value || 0)
         const nextContentsMinSizePlus = nextContents.reduce((plus, content) => plus + content.getMinSize(), 0) || 0
 
+        // maximum size of the front contents === (specific value || moving range - minimum size of the rear contents)
         const prevContentsMaxSizePlus = prevContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
           this.todoContentsMaxSize - nextContentsMinSizePlus
 
+        // maximum size of the rear contents  === (specific value || moving range - minimum size of the front contents)
         const nextContentsMaxSizePlus = nextContents.reduce((plus, content) => plus + content.getMaxSize(), 0) ||
           this.todoContentsMaxSize - prevContentsMinSizePlus
 
-        // total front size to be operated > maximum front size
-        // total front size to be operated < minimum front size
-        // total rear size to be operated > maximum rear size
-        // total rear size to be operated < minimum rear size
+        // Some anti-spill handling
 
-        if (todoPrevContentsSize > prevContentsMaxSizePlus ||
-          todoPrevContentsSize < prevContentsMinSizePlus ||
-          todoNextContentsSize > nextContentsMaxSizePlus ||
-          todoNextContentsSize < nextContentsMinSizePlus) {
+        if (todoPrevContentsSize < 0) {
+          todoPrevContentsSize = 0
+        } else  if (todoPrevContentsSize > this.todoContentsMaxSize) {
+          todoPrevContentsSize = this.todoContentsMaxSize
+        }
+
+        if (todoNextContentsSize < 0) {
+          todoNextContentsSize = 0
+        } else if (todoNextContentsSize > this.todoContentsMaxSize) {
+          todoNextContentsSize = this.todoContentsMaxSize
+        }
+
+        if (todoPrevContentsSize < prevContentsMinSizePlus) {
+          todoPrevContentsSize = prevContentsMinSizePlus
+          todoNextContentsSize = this.todoContentsMaxSize - todoPrevContentsSize
+
+        } else if (todoPrevContentsSize > prevContentsMaxSizePlus) {
+          todoPrevContentsSize = prevContentsMaxSizePlus
+          todoNextContentsSize = this.todoContentsMaxSize - todoPrevContentsSize
+
+        } else if (todoNextContentsSize < nextContentsMinSizePlus) {
+          todoNextContentsSize = nextContentsMinSizePlus
+          todoPrevContentsSize = this.todoContentsMaxSize - todoNextContentsSize
+
+        } else if (todoNextContentsSize > nextContentsMaxSizePlus) {
+          todoNextContentsSize = nextContentsMaxSizePlus
+          todoPrevContentsSize = this.todoContentsMaxSize - todoNextContentsSize
+        }
+
+        if (todoPrevContentsSize + todoNextContentsSize !== this.todoContentsMaxSize) {
+          const averageOverflow = (todoPrevContentsSize + todoNextContentsSize - this.todoContentsMaxSize) / 2
+          todoPrevContentsSize -= averageOverflow
+          todoNextContentsSize -= averageOverflow
+        }
+
+        // console.debug(
+        //   `all-contents: ${prevContentsMinSizePlus + nextContentsMinSizePlus} <= ${todoPrevContentsSize + todoNextContentsSize} <= ${this.todoContentsMaxSize}\n`,
+        //   `prev-contents: ${prevContentsMinSizePlus} <= ${todoPrevContentsSize} <= ${prevContentsMaxSizePlus}\n`,
+        //   `next-contents: ${nextContentsMinSizePlus} <= ${todoNextContentsSize} <= ${nextContentsMaxSizePlus}\n`)
+
+        // Determine thresholds
+        const contentThresholds = (
+          (todoPrevContentsSize <= prevContentsMinSizePlus ? CONTENT_THRESHOLDS_PREV_MIN : 0) |
+          (todoPrevContentsSize >= prevContentsMaxSizePlus ? CONTENT_THRESHOLDS_PREV_MAX : 0) |
+          (todoNextContentsSize <= nextContentsMinSizePlus ? CONTENT_THRESHOLDS_NEXT_MIN : 0) |
+          (todoNextContentsSize >= nextContentsMaxSizePlus ? CONTENT_THRESHOLDS_NEXT_MAX : 0))
+
+        // Cancel if thresholds reached and not changed
+        if (contentThresholds !== 0 && this.contentThresholds === contentThresholds) {
+          // console.debug(`Intercepted, thresholds reached: ${contentThresholds}`)
+          return false
+        }
+        this.contentThresholds = contentThresholds
+
+        // Intercept on out of bound values
+        // total front size to be operated < minimum front size
+        // total front size to be operated > maximum front size
+        // total rear size to be operated < minimum rear size
+        // total rear size to be operated > maximum rear size
+
+        if ((todoPrevContentsSize < prevContentsMinSizePlus) ||
+          (todoPrevContentsSize > prevContentsMaxSizePlus) ||
+          (todoNextContentsSize < nextContentsMinSizePlus) ||
+          (todoNextContentsSize > nextContentsMaxSizePlus)) {
 
           // console.warn('Intercepted, values beyond expectations')
           return false
