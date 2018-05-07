@@ -149,7 +149,7 @@
       // Reset size of content components
       //
       resetContentsSize() {
-        this.contents.forEach((content) => content.reset())
+        this.contents.forEach((content) => content.resetSize())
       },
 
       // Adjust content components proportions
