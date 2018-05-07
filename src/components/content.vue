@@ -2,7 +2,10 @@
   <div class="drag-content"
     :class="[
       zone.orientation,
-      {'threshold': isThreshold},
+      {
+        'fixed': isFixed,
+        'threshold': isThreshold,
+      },
     ]"
   :style="style">
     <slot></slot>
@@ -21,35 +24,56 @@
     ],
 
     props: {
+      initialProportion: {
+        type: Number,
+        default: 1,
+      },
+
       fixed: {
         type: [Number, Boolean],
-        default: false
-      }
+        default: false,
+      },
+
+      minSize: {
+        type: String,
+        default: undefined,
+      },
+
+      maxSize: {
+        type: String,
+        default: undefined,
+      },
     },
 
     created() {
       this.resetSize()
+      this.initialized = true
     },
 
     data() {
       return {
-        sizeProportion_: undefined,
+        $_sizeProportion: undefined,
+        initialized: false,
         isMinSize: false,
         isMaxSize: false
       }
     },
 
     computed: {
+      isFixed() {
+        return this.fixed && this.initialized
+      },
+
       sizeProportion: {
         get() {
-          return this.sizeProportion_
+          return this.$data.$_sizeProportion
         },
         set(val) {
-          if (!isFinite(val) || typeof val !== 'number') {
+          if (this.isFixed || !isFinite(val) || typeof val !== 'number') {
             return
           }
           const max = this.zone.contents.length
-          this.sizeProportion_ = (val >= max ? max : (val <= 0 ? 0 : val))
+          this.$data.$_sizeProportion = (val >= max ? max : (val <= 0 ? 0 : val))
         },
       },
 
@@ -95,16 +119,18 @@
 
       style() {
         const style = {}
-        if (!this.fixed) {
-          style['flex-grow'] = this.sizeProportion
-        }
+
+        style['flex-grow'] = this.sizeProportion
+        if (this.minSize !== undefined) style['min-' + this.zone.sizeAttr] = this.minSize
+        if (this.maxSize !== undefined) style['max-' + this.zone.sizeAttr] = this.maxSize
+
         return style
       },
     },
 
     methods: {
       getMinSize() {
-        if (this.fixed) {
+        if (this.isFixed) {
           return this.zone.getElementSize(this.$el)
 
         } else {
@@ -127,7 +153,7 @@
       },
 
       getMaxSize() {
-        if (this.fixed) {
+        if (this.isFixed) {
           return this.zone.getElementSize(this.$el)
 
         } else {
@@ -148,7 +174,7 @@
       },
 
       resetSize() {
-        this.sizeProportion = 1
+        this.sizeProportion = this.initialProportion
       },
 
       scale(scale) {

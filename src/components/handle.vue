@@ -220,7 +220,7 @@
       handleMouseMove(event) {
 
         // Cancel if the handle is not clicked
-        if (!this.isDragging) return false
+        if (this.disabled || !this.isDragging) return false
 
         // Mouse positioning
         const mousePosition = this.zone.getEventMousePosition(event)

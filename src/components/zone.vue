@@ -160,7 +160,7 @@
 
         contents.forEach(content => {
           const contentSize = this.getElementSize(content.$el)
-          if (content.fixed) {
+          if (content.isFixed) {
             fixedContentsSize += contentSize
             fixedContents.push(content)
 
