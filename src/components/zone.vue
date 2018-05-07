@@ -29,6 +29,15 @@
       children: [],
     }),
 
+    watch: {
+      contentsFractionSum(val) {
+        // ensure sane content proportions
+        if (Math.abs(val - 1) > 0.01) {
+          this.adjustContentProportions()
+        }
+      },
+    },
+
     computed: {
       orientation() {
         return this.isHorizontal ? 'horizontal' : 'vertical'
@@ -57,6 +66,14 @@
 
       contents() {
         return this.children.filter((child) => this.isContentComponent(child))
+      },
+
+      contentsProportionSum() {
+        return this.contents.reduce((sum, content) => sum + content.sizeProportion, 0)
+      },
+
+      contentsFractionSum() {
+        return this.contents.reduce((sum, content) => sum + content.sizeFraction, 0)
       },
 
       handles() {
