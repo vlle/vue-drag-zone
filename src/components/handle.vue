@@ -362,13 +362,13 @@
   }
 
   .drag-handle.horizontal {
-    height: 100%;
+    height: auto;
 
     cursor: col-resize;
   }
 
   .drag-handle.vertical {
-    width: 100%;
+    width: auto;
 
     cursor: row-resize;
   }
