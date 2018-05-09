@@ -88,3 +88,7 @@ export default {
   </drag-zone>
 </template>
 ```
+
+# Based on
+
+[vue-drag-zone](https://github.com/surmon-china/vue-drag-zone) by [surmon-china](https://github.com/surmon-china)
