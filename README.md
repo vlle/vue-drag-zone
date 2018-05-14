@@ -4,16 +4,12 @@ Drag Zone component for Vue.
 
 # Install
 
-#### CDN
 
-``` html
-<script type="text/javascript" src="path/to/vue.min.js"></script>
-<script type="text/javascript" src="path/to/dist/vuelle-drag-zone.js"></script>
-<script type="text/javascript">
-  Vue.use(window.VuelleDragZone)
-</script>
+#### NPM
+
+``` bash
+npm install vuelle-drag-zone --save
 ```
-
 
 ### Mount
 
